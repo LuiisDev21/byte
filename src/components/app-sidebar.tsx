@@ -8,9 +8,9 @@ export function AppSidebar() {
   const recent = ["Proximamente historial de chats"]
 
   return (
-    <aside className="hidden md:flex md:w-64 shrink-0 flex-col border-r bg-sidebar p-4 gap-4 h-full">
+    <nav aria-label="Menú lateral" className="flex w-full flex-col h-full">
       {/* Cabecera fija del sidebar */}
-      <div>
+      <div className="p-4">
         <Button asChild className="w-full justify-start gap-2">
           <Link href="#">
             <MessageSquareText className="size-4" />
@@ -21,7 +21,7 @@ export function AppSidebar() {
       <Separator />
 
       {/* Zona scrollable de recientes */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 p-4 pt-3">
         <ScrollArea className="size-full pr-2">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground px-2">Recientes</p>
@@ -41,6 +41,6 @@ export function AppSidebar() {
           </div>
         </ScrollArea>
       </div>
-    </aside>
+    </nav>
   )
 }

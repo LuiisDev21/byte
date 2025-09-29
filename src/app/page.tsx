@@ -4,21 +4,20 @@ import { EmptyState } from "@/components/empty-state";
 import { ChatComposer } from "@/components/chat-composer";
 import { useChat } from "@/hooks/use-chat";
 import { Markdown } from "@/components/markdown";
-// Scroll control moved to main layout; no inner ScrollArea needed here
 
 export default function Home() {
   const chat = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const hasMessages = chat.messages.length > 0;
 
   useEffect(() => {
-    // Desplaza el contenedor de scroll global (documento) al fondo
+    if (!hasMessages) return; 
     const el = document.scrollingElement || document.documentElement;
-    // Usar requestAnimationFrame para esperar layout
     const id = requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
-    })
-    return () => cancelAnimationFrame(id)
-  }, [chat.messages])
+    });
+    return () => cancelAnimationFrame(id);
+  }, [hasMessages, chat.messages]);
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
@@ -30,7 +29,7 @@ export default function Home() {
       <div
         ref={chatContainerRef}
         className="mx-auto w-full max-w-4xl px-2 py-6"
-        style={{ paddingBottom: "calc(var(--composer-h) + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: hasMessages ? "calc(var(--composer-h) + env(safe-area-inset-bottom))" : "0" }}
       >
         {chat.messages.length === 0 ? (
           <EmptyState />

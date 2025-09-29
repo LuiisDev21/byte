@@ -1,15 +1,23 @@
 import { PawPrint } from "lucide-react"
+import { motion } from "framer-motion"
 
 export function EmptyState() {
   return (
-    <div className="flex flex-1 items-center justify-center">
+    <motion.section
+      aria-labelledby="empty-title"
+      className="w-full max-w-2xl mx-auto px-2 pt-20 md:pt-28 lg:pt-32 pb-8"
+      initial={false}
+      animate={{ x: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 28 }}
+    >
       <div className="text-center text-muted-foreground">
-        <div className="mx-auto mb-4 grid size-16 place-items-center rounded-full bg-accent">
-          <PawPrint className="size-8" />
-        </div>
-        <h2 className="text-xl font-semibold">¡Bienvenido a Byte Chat!</h2>
-        <p className="text-sm">Tu asistente AI sobre perros</p>
+        {/* Huella grande, sin círculo, con ligera transparencia */}
+        <PawPrint aria-hidden className="mx-auto mb-3 size-24 md:size-28 text-foreground/50" />
+        <h1 id="empty-title" className="text-2xl md:text-3xl font-semibold text-foreground">
+          ¡Bienvenido a Byte Chat!
+        </h1>
+        <p className="mt-1 text-base md:text-lg text-muted-foreground">Tu asistente AI sobre perros</p>
       </div>
-    </div>
+  </motion.section>
   )
 }

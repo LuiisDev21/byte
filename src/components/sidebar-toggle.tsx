@@ -1,5 +1,7 @@
 "use client"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 
 export function SidebarToggle({
@@ -9,10 +11,22 @@ export function SidebarToggle({
   open: boolean
   onToggle: () => void
 }) {
+  const [sbPx, setSbPx] = useState(256)
+  useEffect(() => {
+    const compute = () => {
+      const fs = parseFloat(getComputedStyle(document.documentElement).fontSize || "16")
+      setSbPx(16 * fs)
+    }
+    compute()
+    window.addEventListener("resize", compute)
+    return () => window.removeEventListener("resize", compute)
+  }, [])
   return (
-    <div
-      className="pointer-events-none fixed top-1/2 z-20 hidden -translate-y-1/2 md:block transition-[left] duration-300 ease-in-out"
-      style={{ left: "var(--sb-w)", willChange: "left, transform" }}
+    <motion.div
+      className="pointer-events-none fixed top-1/2 z-20 hidden -translate-y-1/2 md:block left-0"
+      style={{ willChange: "transform" }}
+      animate={{ x: open ? sbPx : 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 28 }}
     >
       <Button
         type="button"
@@ -28,6 +42,6 @@ export function SidebarToggle({
       >
         {open ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
       </Button>
-    </div>
+    </motion.div>
   )
 }
