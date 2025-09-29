@@ -43,6 +43,34 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Global scrollbar styling */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(27 35% 55%) transparent;
+}
+/* WebKit */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: hsla(27, 35%, 55%, 0.7);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(27 35% 55%);
+}
+
+/* Default composer height so content can reserve space without JS */
+:root {
+  /* Composer height default increased to ensure content isn't hidden under the fixed composer */
+  --composer-h: 8rem; /* safe default to cover padding, margins and bottom offset */
+}
+
 :root {
   --radius: 0.625rem;
   --background: #f6efe2;         
