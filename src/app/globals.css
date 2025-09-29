@@ -45,31 +45,31 @@
 
 :root {
   --radius: 0.625rem;
-  /* Paleta clara basada en la imagen (crema/marrón) */
-  --background: #f6efe2;           /* crema */
-  --foreground: #3f2a17;           /* marrón oscuro para texto */
+  --background: #f6efe2;         
+  --foreground: #3f2a17;          
   --card: #fcf7ee;
   --card-foreground: #3f2a17;
   --popover: #fcf7ee;
   --popover-foreground: #3f2a17;
-  --primary: #8b5e34;              /* marrón principal */
-  --primary-foreground: #fff7ec;   /* texto sobre primario */
-  --secondary: #f1e6d6;            /* crema más oscuro */
+  --primary: #8b5e34;             
+  --primary-foreground: #fff7ec;   
+  --secondary: #f1e6d6;          
   --secondary-foreground: #3f2a17;
   --muted: #efe2d2;
   --muted-foreground: #7a5b3c;
-  --accent: #eadcc8;               /* hover y resaltes */
+  --accent: #eadcc8;           
   --accent-foreground: #3f2a17;
-  --destructive: #dc5d45;          /* rojo terroso */
+  --destructive: #dc5d45;        
   --border: #e5d7c4;
   --input: #e5d7c4;
-  --ring: #c9b59f;                 /* halo de enfoque */
+  --ring: #c9b59f;               
   /* Colores de gráficos (aprox) */
   --chart-1: #8b5e34;
   --chart-2: #c08a5a;
   --chart-3: #6f4b28;
   --chart-4: #d7b48a;
   --chart-5: #a77449;
+
   /* Sidebar */
   --sidebar: #f3e6d4;
   --sidebar-foreground: #3f2a17;
@@ -82,13 +82,13 @@
 }
 
 .dark {
-  --background: #2b2117;          /* marrón muy oscuro */
+  --background: #2b2117;         
   --foreground: #f3e6d4;
   --card: #1f180f;
   --card-foreground: #f3e6d4;
   --popover: #1f180f;
   --popover-foreground: #f3e6d4;
-  --primary: #d1a77a;              /* marrón claro para dark */
+  --primary: #d1a77a;              
   --primary-foreground: #2b2117;
   --secondary: #3a2d21;
   --secondary-foreground: #f3e6d4;
