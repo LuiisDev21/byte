@@ -1,0 +1,37 @@
+"use client"
+import { useState } from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarToggle } from "./sidebar-toggle"
+
+export function LayoutShell({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(true)
+
+  const sbWidth = open ? "16rem" : "0rem"
+
+  return (
+  <div className="relative min-h-dvh" style={{ ['--sb-w' as any]: sbWidth }}>
+      <div
+        className="grid min-h-dvh grid-cols-1 md:grid-cols-[var(--sb-w)_1fr] transition-[grid-template-columns] duration-300 ease-in-out"
+        style={{ gridTemplateColumns: undefined }}
+      >
+        {/* Columna sidebar (se mantiene en el DOM para animar) */}
+        <div className="hidden overflow-hidden bg-sidebar md:block">
+          <AppSidebar />
+        </div>
+
+        {/* Columna contenido */}
+        <div className="flex min-h-dvh flex-col">
+          <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4" />
+          </header>
+          <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4">
+            {children}
+          </main>
+        </div>
+      </div>
+
+      {/* Botón flotante a mitad del borde entre sidebar y contenido */}
+      <SidebarToggle open={open} onToggle={() => setOpen((v) => !v)} />
+    </div>
+  )
+}
