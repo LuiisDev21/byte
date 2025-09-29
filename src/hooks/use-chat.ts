@@ -118,7 +118,7 @@ export function useChat() {
                     flushAssistant()
                   }
                 }
-              } catch (_) {
+              } catch {
                 // Si no es JSON, asume texto directo
                 assistant += dataStr
                 flushAssistant()

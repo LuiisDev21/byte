@@ -5,11 +5,7 @@ import { Button } from "@/components/ui/button"
 
 export function AppSidebar() {
   const recent = [
-    "Planes para el fin de semana",
-    "Receta de pastel de chocolate",
-    "Ideas para nuevo proyecto",
-    "Resumen de libro",
-    "Consejos de viaje a Japón",
+    "Proximamente historial de chats",
   ]
   return (
   <aside className="hidden md:flex md:w-64 shrink-0 flex-col border-r bg-sidebar p-4 gap-4 min-h-dvh">

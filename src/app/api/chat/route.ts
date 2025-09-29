@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return new Response(
         JSON.stringify({
           error:
-            "Falta GOOGLE_GENERATIVE_AI_API_KEY en variables de entorno.",
+            "API KEY NO ENCONTRADA.",
         }),
         { status: 500, headers: { "content-type": "application/json" } }
       )
@@ -40,17 +40,19 @@ export async function POST(req: NextRequest) {
       : ([{ role: "user", content: String(body.prompt ?? "") }] as IncomingMessage[])
 
     // Construimos mensajes (solo user/assistant) en formato CoreMessage
-    const prepared = finalMessages.map((m) => ({
+    type TextPart = { type: "text"; text: string }
+    type CoreMessageLite = { role: "user" | "assistant"; content: TextPart[] }
+    const prepared: CoreMessageLite[] = finalMessages.map((m) => ({
       role: m.role as "user" | "assistant",
-      content: [{ type: "text" as const, text: m.content ?? "" }],
+      content: [{ type: "text", text: m.content ?? "" }],
     }))
 
     // Validación básica: al menos un mensaje de usuario con contenido
-    const hasUserText = prepared.some((m: any) => {
-      if (m?.role !== "user") return false
+    const hasUserText = prepared.some((m) => {
+      if (m.role !== "user") return false
       const parts = Array.isArray(m.content) ? m.content : []
-      const text = parts.find((p: any) => p?.type === "text")?.text ?? ""
-      return String(text).trim().length > 0
+      const text = parts.find((p) => p.type === "text")?.text ?? ""
+      return text.trim().length > 0
     })
     if (!hasUserText) {
       return new Response(JSON.stringify({ error: "Mensaje vacío" }), {
@@ -68,24 +70,30 @@ export async function POST(req: NextRequest) {
       temperature: body.temperature ?? 0.7,
       maxTokens: body.maxTokens,
     })
-
-    const anyResult: any = result as any
-    if (typeof anyResult.toTextStreamResponse === "function") {
-      return anyResult.toTextStreamResponse()
+    type StreamLike = {
+      toTextStreamResponse?: () => Response
+      toAIStreamResponse?: () => Response
+      toDataStreamResponse?: () => Response
+      toReadableStream?: () => ReadableStream<Uint8Array>
+      text?: () => Promise<string>
     }
-    if (typeof anyResult.toAIStreamResponse === "function") {
-      return anyResult.toAIStreamResponse()
+    const r = result as StreamLike
+    if (typeof r.toTextStreamResponse === "function") {
+      return r.toTextStreamResponse()
     }
-    if (typeof anyResult.toDataStreamResponse === "function") {
-      return anyResult.toDataStreamResponse()
+    if (typeof r.toAIStreamResponse === "function") {
+      return r.toAIStreamResponse()
     }
-    if (typeof anyResult.toReadableStream === "function") {
-      return new Response(anyResult.toReadableStream(), {
+    if (typeof r.toDataStreamResponse === "function") {
+      return r.toDataStreamResponse()
+    }
+    if (typeof r.toReadableStream === "function") {
+      return new Response(r.toReadableStream(), {
         headers: { "content-type": "text/plain; charset=utf-8" },
       })
     }
     // Último recurso: serializar a texto si no hay método de stream disponible
-    const text = typeof anyResult.text === "function" ? await anyResult.text() : ""
+    const text = typeof r.text === "function" ? await r.text() : ""
     return new Response(text, { headers: { "content-type": "text/plain; charset=utf-8" } })
   } catch (err) {
     console.error("/api/chat error", err)

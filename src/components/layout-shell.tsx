@@ -7,9 +7,11 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
 
   const sbWidth = open ? "16rem" : "0rem"
+  type CSSVars = React.CSSProperties & { [key: string]: string | number | undefined }
+  const rootStyle: CSSVars = { ["--sb-w"]: sbWidth }
 
   return (
-  <div className="relative min-h-dvh" style={{ ['--sb-w' as any]: sbWidth }}>
+  <div className="relative min-h-dvh" style={rootStyle}>
       <div
         className="grid min-h-dvh grid-cols-1 md:grid-cols-[var(--sb-w)_1fr] transition-[grid-template-columns] duration-300 ease-in-out"
         style={{ gridTemplateColumns: undefined }}

@@ -1,5 +1,5 @@
 declare module "ai" {
-  export const streamText: (args: any) => any
-  export type CoreMessage = any
-  export const convertToCoreMessages: (messages: any) => any
+  export const streamText: (args: unknown) => unknown
+  export type CoreMessage = unknown
+  export const convertToCoreMessages: (messages: unknown) => unknown
 }
