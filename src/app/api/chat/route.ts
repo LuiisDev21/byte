@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
       ? userMessages
       : ([{ role: "user", content: String(body.prompt ?? "") }] as IncomingMessage[])
 
-    // Construimos mensajes (solo user/assistant) en formato CoreMessage
     type TextPart = { type: "text"; text: string }
     type CoreMessageLite = { role: "user" | "assistant"; content: TextPart[] }
     const prepared: CoreMessageLite[] = finalMessages.map((m) => ({
@@ -47,7 +46,6 @@ export async function POST(req: NextRequest) {
       content: [{ type: "text", text: m.content ?? "" }],
     }))
 
-    // Validación básica: al menos un mensaje de usuario con contenido
     const hasUserText = prepared.some((m) => {
       if (m.role !== "user") return false
       const parts = Array.isArray(m.content) ? m.content : []
@@ -92,7 +90,6 @@ export async function POST(req: NextRequest) {
         headers: { "content-type": "text/plain; charset=utf-8" },
       })
     }
-    // Último recurso: serializar a texto si no hay método de stream disponible
     const text = typeof r.text === "function" ? await r.text() : ""
     return new Response(text, { headers: { "content-type": "text/plain; charset=utf-8" } })
   } catch (err) {

@@ -43,13 +43,10 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Global scrollbar styling */
-/* Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(27 35% 55%) transparent;
 }
-/* WebKit */
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -64,11 +61,8 @@
 *::-webkit-scrollbar-thumb:hover {
   background-color: hsl(27 35% 55%);
 }
-
-/* Default composer height so content can reserve space without JS */
 :root {
-  /* Composer height default increased to ensure content isn't hidden under the fixed composer */
-  --composer-h: 8rem; /* safe default to cover padding, margins and bottom offset */
+  --composer-h: 8rem;
 }
 
 :root {
@@ -91,14 +85,12 @@
   --border: #e5d7c4;
   --input: #e5d7c4;
   --ring: #c9b59f;               
-  /* Colores de gráficos (aprox) */
   --chart-1: #8b5e34;
   --chart-2: #c08a5a;
   --chart-3: #6f4b28;
   --chart-4: #d7b48a;
   --chart-5: #a77449;
 
-  /* Sidebar */
   --sidebar: #f3e6d4;
   --sidebar-foreground: #3f2a17;
   --sidebar-primary: #8b5e34;

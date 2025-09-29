@@ -34,7 +34,6 @@ export function MobileSidebar({ open, onClose }: Props) {
       aria-hidden={!open}
       className={`fixed inset-0 z-40 md:hidden ${open ? "pointer-events-auto" : "pointer-events-none"}`}
     >
-
       <div
         onClick={onClose}
         className={`absolute inset-0 bg-black/40 transition-opacity ${open ? "opacity-100" : "opacity-0"}`}

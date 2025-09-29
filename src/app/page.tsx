@@ -4,11 +4,16 @@ import { EmptyState } from "@/components/empty-state";
 import { ChatComposer } from "@/components/chat-composer";
 import { useChat } from "@/hooks/use-chat";
 import { Markdown } from "@/components/markdown";
+import { TypingMarkdown } from "@/components/typing-text";
+import { TypingIndicator } from "@/components/typing-indicator";
 
 export default function Home() {
   const chat = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const hasMessages = chat.messages.length > 0;
+  const last = hasMessages ? chat.messages[chat.messages.length - 1] : null;
+  const shouldShowGlobalIndicator = chat.isLoading && (!last || last.role !== "assistant");
+  const lastIndex = chat.messages.length - 1;
 
   useEffect(() => {
     if (!hasMessages) return; 
@@ -53,13 +58,33 @@ export default function Home() {
                   }`}
                 >
                   {m.role === "assistant" ? (
-                    <Markdown className="prose prose-neutral max-w-none dark:prose-invert">{m.content}</Markdown>
+                    i === lastIndex && chat.isLoading ? (
+                      m.content ? (
+                        <div aria-live="polite" aria-atomic>
+                          <TypingMarkdown text={m.content} cps={60} />
+                        </div>
+                      ) : (
+                        <TypingIndicator />
+                      )
+                    ) : (
+                      <Markdown className="prose prose-neutral max-w-none dark:prose-invert">{m.content}</Markdown>
+                    )
                   ) : (
                     <div className="whitespace-pre-wrap leading-7">{m.content}</div>
                   )}
                 </div>
               </div>
             ))}
+            {shouldShowGlobalIndicator && (
+              <div className="flex items-end gap-2 justify-start" aria-live="polite" aria-atomic>
+                <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <p className="text-sm font-bold">B</p>
+                </div>
+                <div className="max-w-[85%] rounded-lg p-3 border bg-card">
+                  <TypingIndicator />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
