@@ -13,9 +13,9 @@ export default function Home() {
   const lastMessage = hasMessages ? chat.messages[chat.messages.length - 1] : null;
 
   useAutoScroll(
-    hasMessages, 
-    chat.messages.length, 
-    chat.isLoading, 
+    hasMessages,
+    chat.messages.length,
+    chat.isLoading,
     lastMessage?.content
   );
 
@@ -39,7 +39,7 @@ export default function Home() {
           )}
         </div>
       </div>
-      
+
       {/* Fixed composer at bottom */}
       <div className="flex-shrink-0">
         <ChatComposer

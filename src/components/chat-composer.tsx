@@ -15,10 +15,10 @@ export function ChatComposer({ value, onChange, onSubmit, disabled }: Props) {
     <div className="w-full bg-background/95 backdrop-blur-sm border-t">
       <div className="mx-auto w-full max-w-4xl p-3 md:p-4">
         <form onSubmit={onSubmit} className="w-full">
-          <div className="flex items-center gap-2 rounded-lg border bg-card shadow-sm p-2">
+          <div className="relative flex items-center">
             <Input
               placeholder="Escribe tu mensaje..."
-              className="flex-1 h-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="w-full h-12 pl-4 pr-12 rounded-full border bg-card shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm"
               value={value}
               onChange={(e) => onChange(e.target.value)}
               disabled={disabled}
@@ -28,7 +28,7 @@ export function ChatComposer({ value, onChange, onSubmit, disabled }: Props) {
               size="icon" 
               aria-label="Enviar" 
               disabled={disabled || !value.trim()}
-              className="shrink-0"
+              className="absolute right-1 size-10 rounded-full shrink-0"
             >
               <SendHorizonal className="size-4" />
             </Button>
