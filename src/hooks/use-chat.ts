@@ -51,22 +51,34 @@ export function useChat() {
           while (true) {
             const { done, value } = await reader.read()
             if (done) break
-            assistant += decoder.decode(value, { stream: true })
+            
+            const chunk = decoder.decode(value, { stream: true })
+            assistant += chunk
+            
+            // Actualizar inmediatamente para el efecto de escritura
             setMessages((prev) => {
               const copy = [...prev]
-              const idx = copy.findIndex((m, i) => i === copy.length - 1 && m.role === "assistant")
-              if (idx !== -1) copy[idx] = { role: "assistant", content: assistant }
+              const lastIdx = copy.length - 1
+              if (lastIdx >= 0 && copy[lastIdx].role === "assistant") {
+                copy[lastIdx] = { role: "assistant", content: assistant }
+              }
               return copy
             })
           }
+          
           // Flush final
-          assistant += decoder.decode()
-          setMessages((prev) => {
-            const copy = [...prev]
-            const idx = copy.findIndex((m, i) => i === copy.length - 1 && m.role === "assistant")
-            if (idx !== -1) copy[idx] = { role: "assistant", content: assistant }
-            return copy
-          })
+          const finalChunk = decoder.decode()
+          if (finalChunk) {
+            assistant += finalChunk
+            setMessages((prev) => {
+              const copy = [...prev]
+              const lastIdx = copy.length - 1
+              if (lastIdx >= 0 && copy[lastIdx].role === "assistant") {
+                copy[lastIdx] = { role: "assistant", content: assistant }
+              }
+              return copy
+            })
+          }
         } else {
           // Server-Sent Events: parsea bloques separados por \n\n con líneas tipo "data: ..."
           let buffer = ""
