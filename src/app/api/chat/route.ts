@@ -16,9 +16,21 @@ export const runtime = "edge"
 export const dynamic = "force-dynamic"
 type MessageRole = "system" | "user" | "assistant" | "tool"
 
+interface TextContent {
+  type: "text"
+  text: string
+}
+
+interface ImageContent {
+  type: "image"
+  image: string | Uint8Array | Buffer | ArrayBuffer | URL
+}
+
+type MessageContent = string | (TextContent | ImageContent)[]
+
 interface IncomingMessage {
   role: MessageRole
-  content: string
+  content: MessageContent
 }
 
 interface RequestBody {
@@ -34,9 +46,14 @@ interface TextPart {
   text: string
 }
 
+interface ImagePart {
+  type: "image"
+  image: string | Uint8Array | Buffer | ArrayBuffer | URL
+}
+
 interface CoreMessage {
   role: "user" | "assistant"
-  content: TextPart[]
+  content: (TextPart | ImagePart)[]
 }
 const JSON_HEADERS = { "content-type": "application/json" }
 const TEXT_HEADERS = { "content-type": "text/plain; charset=utf-8" }
@@ -62,17 +79,56 @@ function prepareMessages(body: RequestBody): IncomingMessage[] {
 }
 
 function transformMessages(messages: IncomingMessage[]): CoreMessage[] {
-  return messages.map((m) => ({
-    role: m.role as "user" | "assistant",
-    content: [{ type: "text", text: m.content ?? "" }],
-  }))
+  return messages.map((m) => {
+    const role = m.role as "user" | "assistant"
+    
+    // Si el contenido es string, convertir a formato de texto
+    if (typeof m.content === "string") {
+      return {
+        role,
+        content: [{ type: "text", text: m.content }],
+      }
+    }
+    
+    // Si el contenido es array, mantener el formato multimodal
+    if (Array.isArray(m.content)) {
+      return {
+        role,
+        content: m.content.map(part => {
+          if (part.type === "text") {
+            return { type: "text", text: part.text }
+          }
+          if (part.type === "image") {
+            return { type: "image", image: part.image }
+          }
+          return part
+        }),
+      }
+    }
+    
+    // Fallback para contenido vacío
+    return {
+      role,
+      content: [{ type: "text", text: "" }],
+    }
+  })
 }
 
 function hasValidUserInput(messages: CoreMessage[]): boolean {
   return messages.some((m) => {
     if (m.role !== "user") return false
-    const text = m.content.find((p) => p.type === "text")?.text ?? ""
-    return text.trim().length > 0
+    
+    // Verificar si hay texto no vacío
+    const hasText = m.content.some(part => 
+      part.type === "text" && part.text.trim().length > 0
+    )
+    
+    // Verificar si hay imagen
+    const hasImage = m.content.some(part => 
+      part.type === "image" && part.image
+    )
+    
+    return hasText || hasImage
   })
 }
 

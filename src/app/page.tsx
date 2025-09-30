@@ -3,11 +3,11 @@ import { useRef } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ChatComposer } from "@/components/chat-composer";
 import { ChatMessages } from "@/components/chat-messages";
-import { useChat } from "@/hooks/use-chat";
+import { useChatWithImages } from "@/hooks/use-chat-with-images";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 
 export default function Home() {
-  const chat = useChat();
+  const chat = useChatWithImages();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const hasMessages = chat.messages.length > 0;
   const lastMessage = hasMessages ? chat.messages[chat.messages.length - 1] : null;
@@ -16,7 +16,7 @@ export default function Home() {
     hasMessages,
     chat.messages.length,
     chat.isLoading,
-    lastMessage?.content
+    typeof lastMessage?.content === "string" ? lastMessage.content : ""
   );
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -45,6 +45,9 @@ export default function Home() {
           onChange={chat.setInput}
           onSubmit={handleSubmit}
           disabled={chat.isLoading}
+          selectedImage={chat.selectedImage}
+          onImageSelect={chat.setSelectedImage}
+          onImageRemove={() => chat.setSelectedImage(null)}
         />
       </div>
     </div>

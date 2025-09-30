@@ -1,6 +1,24 @@
-import { ChatMessage as Message } from "@/hooks/use-chat";
 import { ChatMessage } from "@/components/chat-message";
 import { LoadingIndicator } from "@/components/loading-indicator";
+
+interface TextContent {
+  type: "text"
+  text: string
+}
+
+interface ImageContent {
+  type: "image"
+  image: string
+}
+
+type MessageContentType = string | (TextContent | ImageContent)[]
+
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: MessageContentType
+  timestamp: Date
+}
 
 interface ChatMessagesProps {
     messages: Message[];

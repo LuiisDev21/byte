@@ -1,8 +1,25 @@
-import { ChatMessage as Message } from "@/hooks/use-chat";
-import { Markdown } from "@/components/markdown";
-import { TypingMarkdown } from "@/components/typing-text";
+import { MessageContent } from "@/components/message-content";
 import { TypingIndicator } from "@/components/typing-indicator";
 import { PawPrint } from "lucide-react";
+
+interface TextContent {
+  type: "text"
+  text: string
+}
+
+interface ImageContent {
+  type: "image"
+  image: string
+}
+
+type MessageContentType = string | (TextContent | ImageContent)[]
+
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: MessageContentType
+  timestamp: Date
+}
 
 interface ChatMessageProps {
   message: Message;
@@ -20,13 +37,14 @@ export function ChatMessage({ message, isLastMessage, isLoading }: ChatMessagePr
       {isAssistant && <AssistantAvatar />}
       
       <div className={`max-w-[85%] rounded-lg p-3 ${getMessageStyles(isUser)}`}>
-        {isAssistant ? (
-          <AssistantMessageContent 
-            content={message.content}
-            shouldShowTyping={shouldShowTyping}
-          />
+        {shouldShowTyping && !message.content ? (
+          <TypingIndicator />
         ) : (
-          <UserMessageContent content={message.content} />
+          <MessageContent 
+            content={message.content}
+            role={message.role}
+            isTyping={shouldShowTyping}
+          />
         )}
       </div>
     </div>
@@ -41,29 +59,7 @@ function AssistantAvatar() {
   );
 }
 
-function AssistantMessageContent({ content, shouldShowTyping }: { content: string; shouldShowTyping: boolean }) {
-  if (shouldShowTyping) {
-    return content ? (
-      <div aria-live="polite" aria-atomic>
-        <TypingMarkdown text={content} enabled={true} />
-      </div>
-    ) : (
-      <TypingIndicator />
-    );
-  }
 
-  return (
-    <Markdown className="prose prose-neutral max-w-none dark:prose-invert">
-      {content}
-    </Markdown>
-  );
-}
-
-function UserMessageContent({ content }: { content: string }) {
-  return (
-    <div className="whitespace-pre-wrap leading-7">{content}</div>
-  );
-}
 
 function getMessageStyles(isUser: boolean): string {
   return isUser
