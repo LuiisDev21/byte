@@ -4,64 +4,62 @@ import { Markdown } from "@/components/markdown"
 
 type Props = {
   text: string
-  cps?: number
+  speed?: number
   enabled?: boolean
   showCaret?: boolean
   className?: string
 }
 
-export function TypingText({ text, cps = 45, enabled = true, showCaret = false, className }: Props) {
-  const [displayText, setDisplayText] = useState("")
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const currentIndexRef = useRef(0)
+export function TypingText({ text, speed = 50, enabled = true, showCaret = false, className }: Props) {
+  const [displayedText, setDisplayedText] = useState("")
+  const animationRef = useRef<number | null>(null)
+  const startTimeRef = useRef<number | null>(null)
+  const lastUpdateRef = useRef<number>(0)
 
   useEffect(() => {
     if (!enabled) {
-      setDisplayText(text)
+      setDisplayedText(text)
       return
     }
 
-    // Si el texto es más corto que lo que ya mostramos, reiniciar
-    if (text.length < currentIndexRef.current) {
-      currentIndexRef.current = 0
-      setDisplayText("")
-    }
+    // Reset animation when text changes
+    setDisplayedText("")
+    lastUpdateRef.current = 0
+    startTimeRef.current = null
 
-    // Solo animar si hay nuevo contenido
-    if (text.length > currentIndexRef.current) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    if (text.length === 0) return
+
+    const animate = (currentTime: number) => {
+      if (!startTimeRef.current) {
+        startTimeRef.current = currentTime
       }
 
-      intervalRef.current = setInterval(() => {
-        setDisplayText(prev => {
-          const nextIndex = currentIndexRef.current + 1
-          if (nextIndex <= text.length) {
-            currentIndexRef.current = nextIndex
-            return text.slice(0, nextIndex)
-          } else {
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current)
-              intervalRef.current = null
-            }
-            return prev
-          }
-        })
-      }, 1000 / cps)
+      const elapsed = currentTime - startTimeRef.current
+      const targetLength = Math.min(Math.floor(elapsed / speed), text.length)
+
+      if (targetLength > lastUpdateRef.current) {
+        lastUpdateRef.current = targetLength
+        setDisplayedText(text.slice(0, targetLength))
+      }
+
+      if (targetLength < text.length) {
+        animationRef.current = requestAnimationFrame(animate)
+      }
     }
+
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [text, enabled, cps])
+  }, [text, speed, enabled])
 
   return (
     <span className={className}>
-      {displayText}
-      {showCaret && enabled && displayText.length < text.length && (
+      {displayedText}
+      {showCaret && enabled && displayedText.length < text.length && (
         <span className="ml-0.5 inline-block h-[1em] w-px align-[-0.1em] bg-foreground/80 animate-pulse" />
       )}
     </span>
@@ -69,74 +67,84 @@ export function TypingText({ text, cps = 45, enabled = true, showCaret = false, 
 }
 
 type MDProps = Omit<Props, "text"> & { text: string }
-export function TypingMarkdown({ text, cps = 30, enabled = true, showCaret = false, className }: MDProps) {
-  const [displayText, setDisplayText] = useState("")
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const targetTextRef = useRef("")
-  const isTypingRef = useRef(false)
+export function TypingMarkdown({ text, speed = 50, enabled = true, showCaret = false, className }: MDProps) {
+  const [displayedText, setDisplayedText] = useState("")
+  const [isComplete, setIsComplete] = useState(false)
+  const animationRef = useRef<number | null>(null)
+  const startTimeRef = useRef<number | null>(null)
+  const lastLengthRef = useRef<number>(0)
+  const previousTextRef = useRef<string>("")
 
   useEffect(() => {
     if (!enabled) {
-      setDisplayText(text)
+      setDisplayedText(text)
+      setIsComplete(true)
       return
     }
 
-    targetTextRef.current = text
+    // Si el texto es completamente diferente, reiniciar
+    if (!text.startsWith(previousTextRef.current)) {
+      setDisplayedText("")
+      lastLengthRef.current = 0
+      startTimeRef.current = null
+      setIsComplete(false)
+    }
 
-    // Si ya estamos escribiendo y el texto solo se extiende, no reiniciar
-    if (isTypingRef.current && text.startsWith(displayText)) {
+    previousTextRef.current = text
+
+    if (text.length === 0) {
+      setDisplayedText("")
+      setIsComplete(true)
       return
     }
 
-    // Si es un texto completamente nuevo, reiniciar
-    if (!text.startsWith(displayText)) {
-      setDisplayText("")
-      isTypingRef.current = false
+    // Si el texto solo se extendió, continuar desde donde estábamos
+    if (text.length <= lastLengthRef.current) {
+      return
     }
 
-    // Iniciar animación de escritura
-    if (!isTypingRef.current) {
-      isTypingRef.current = true
-      typeText()
-    }
-
-    function typeText() {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+    const animate = (currentTime: number) => {
+      if (!startTimeRef.current) {
+        startTimeRef.current = currentTime
       }
 
-      timeoutRef.current = setTimeout(() => {
-        setDisplayText(current => {
-          const target = targetTextRef.current
-          if (current.length < target.length) {
-            const nextChar = target[current.length]
-            const newText = current + nextChar
-            
-            // Continuar escribiendo
-            typeText()
-            return newText
-          } else {
-            // Terminamos de escribir
-            isTypingRef.current = false
-            return current
-          }
-        })
-      }, 1000 / cps)
+      const elapsed = currentTime - startTimeRef.current
+      const targetLength = Math.min(
+        lastLengthRef.current + Math.floor(elapsed / speed),
+        text.length
+      )
+
+      if (targetLength > lastLengthRef.current) {
+        lastLengthRef.current = targetLength
+        setDisplayedText(text.slice(0, targetLength))
+      }
+
+      if (targetLength < text.length) {
+        animationRef.current = requestAnimationFrame(animate)
+      } else {
+        setIsComplete(true)
+      }
     }
+
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current)
+    }
+
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [text, enabled, cps])
+  }, [text, speed, enabled])
 
   return (
     <span className={className}>
       <Markdown className="prose prose-neutral max-w-none dark:prose-invert">
-        {displayText}
+        {displayedText}
       </Markdown>
-      {showCaret && enabled && displayText.length < text.length && (
+      {showCaret && enabled && !isComplete && (
         <span className="ml-0.5 inline-block h-[1em] w-px align-[-0.1em] bg-foreground/80 animate-pulse" />
       )}
     </span>

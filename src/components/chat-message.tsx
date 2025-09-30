@@ -44,7 +44,7 @@ function AssistantMessageContent({ content, shouldShowTyping }: { content: strin
   if (shouldShowTyping) {
     return content ? (
       <div aria-live="polite" aria-atomic>
-        <TypingMarkdown text={content} cps={50} enabled={true} />
+        <TypingMarkdown text={content} speed={40} enabled={true} />
       </div>
     ) : (
       <TypingIndicator />
