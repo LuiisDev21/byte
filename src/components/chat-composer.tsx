@@ -1,3 +1,12 @@
+/**
+ * [LUIS] - 30/09/2025 Componente de entrada de mensajes del chat con soporte para imágenes.
+ * - Estado: isLoading, isDragOver; maneja carga de archivos y drag & drop.
+ * - Funciones: processImageFile(), handleFileSelect(), handlePaste(), handleDrop()
+ *   para procesar imágenes desde archivo, clipboard o arrastrar.
+ * - Diseño moderno: campo redondeado con botones integrados (imagen + enviar).
+ * - Validación: máximo 5MB, solo imágenes, botón disabled cuando no hay contenido.
+ * - API: { value, onChange, onSubmit, disabled?, selectedImage?, onImageSelect?, onImageRemove? }.
+ */
 "use client"
 import { SendHorizonal, ImageIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"

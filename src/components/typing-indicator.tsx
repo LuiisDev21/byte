@@ -1,3 +1,11 @@
+/**
+ * [LUIS] - 30/09/2025 Componente de indicador de escritura con animación.
+ * - Estado: ninguno; animación pura CSS con bouncing dots.
+ * - Muestra texto "Pensando" + 3 puntos animados con delays escalonados.
+ * - Animación: bounce con delays de -200ms, -100ms, 0ms para efecto wave.
+ * - Accesibilidad: texto oculto para screen readers (sr-only).
+ * - API: sin props, componente autocontenido.
+ */
 "use client"
 
 export function TypingIndicator() {

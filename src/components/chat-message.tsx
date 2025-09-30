@@ -1,3 +1,12 @@
+/**
+ * [LUIS] - 30/09/2025 Componente para renderizar mensajes individuales del chat con soporte multimedia.
+ * - Estado: ninguno; renderizado basado en props (message, isLastMessage, isLoading).
+ * - Tipos: Message con content string o array de TextContent/ImageContent.
+ * - ChatMessage(): contenedor principal con avatar y contenido según rol.
+ * - AssistantAvatar(): círculo con pata de perro para identificar al asistente.
+ * - MessageContent: delega renderizado a componente especializado según tipo de contenido.
+ * - API: { message: Message, isLastMessage: boolean, isLoading: boolean }.
+ */
 import { MessageContent } from "@/components/message-content";
 import { TypingIndicator } from "@/components/typing-indicator";
 import { PawPrint } from "lucide-react";

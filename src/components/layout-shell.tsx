@@ -1,3 +1,12 @@
+/**
+ * [LUIS] - 30/09/2025 Shell principal del layout con sidebar colapsible responsivo.
+ * - Estado: open, mobileOpen, isDesktop; controla visibilidad y colapso de sidebars.
+ * - Sidebar desktop: animado con Framer Motion, ancho variable (4rem collapsed, 16rem expanded).
+ * - Header móvil: botón hamburguesa fijo en top con backdrop blur.
+ * - Layout responsivo: margin-left dinámico en desktop según estado sidebar.
+ * - LayoutUIProvider: context para compartir estado UI entre componentes.
+ * - API: { children: ReactNode }.
+ */
 "use client"
 import { useEffect, useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"

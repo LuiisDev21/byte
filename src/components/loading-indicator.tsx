@@ -1,3 +1,11 @@
+/**
+ * [LUIS] - 30/09/2025 Componente de indicador de carga para el chat.
+ * - Estado: ninguno; componente estático de presentación.
+ * - Renderiza avatar del asistente (círculo con pata de perro) + TypingIndicator.
+ * - Usado cuando el asistente va a responder pero aún no hay contenido.
+ * - Accesibilidad: aria-live="polite" y aria-atomic para screen readers.
+ * - API: sin props, componente autocontenido.
+ */
 import { TypingIndicator } from "@/components/typing-indicator";
 import { PawPrint } from "lucide-react";
 
