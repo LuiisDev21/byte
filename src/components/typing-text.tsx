@@ -2,11 +2,23 @@
 import { useEffect, useState } from "react"
 import { Markdown } from "@/components/markdown"
 
+
 type Props = {
   text: string
   enabled?: boolean
   className?: string
 }
+
+/***
+ * [LUIS] - 30/09/2025 Componente React para texto con efecto de aparición.
+ * - Estado: isVisible, displayText, key; controla animaciones de fade-in.
+ * - TypingText(): muestra texto con transición de opacidad suave tras delay de 100ms
+ *   cuando enabled=true, sino aparece inmediatamente.
+ * - TypingMarkdown(): renderiza markdown con animación fade-in, actualiza key
+ *   para forzar re-render cuando cambia el texto.
+ * - API: { text, enabled?, className? } para ambos componentes.
+ */
+
 
 export function TypingText({ text, enabled = true, className }: Props) {
   const [isVisible, setIsVisible] = useState(false)
@@ -17,10 +29,8 @@ export function TypingText({ text, enabled = true, className }: Props) {
       return
     }
 
-    // Reset visibility when text changes
     setIsVisible(false)
     
-    // Small delay then fade in
     const timer = setTimeout(() => {
       setIsVisible(true)
     }, 100)
@@ -50,10 +60,9 @@ export function TypingMarkdown({ text, enabled = true, className }: MDProps) {
       return
     }
 
-    // Si el texto cambió, actualizar con efecto sutil
     if (text !== displayText) {
       setDisplayText(text)
-      setKey(prev => prev + 1) // Forzar re-render para animación
+      setKey(prev => prev + 1) 
     }
   }, [text, enabled, displayText])
 

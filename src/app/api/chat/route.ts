@@ -11,6 +11,17 @@ type IncomingMessage = {
   content: string
 }
 
+
+/***
+ * [LUIS] - 29/09/2025 API Route de Next.js para chat con streaming de Google Gemini.
+ * - Runtime: edge, dynamic; valida API_KEY y procesa mensajes del chat.
+ * - POST(): recibe { messages, prompt, temperature, maxTokens, system },
+ *   filtra mensajes del sistema, valida contenido no vacío y llama a streamText()
+ *   con Google Gemini devolviendo respuesta en streaming (SSE/text/plain).
+ * - API: IncomingMessage[], manejo de errores 400/500, múltiples formatos de stream.
+ */
+
+
 export async function POST(req: NextRequest) {
   try {
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {

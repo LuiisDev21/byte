@@ -9,7 +9,6 @@ export function AppSidebar() {
 
   return (
     <nav aria-label="Menú lateral" className="flex w-full flex-col h-full">
-      {/* Cabecera fija del sidebar */}
       <div className="p-4">
         <Button asChild className="w-full justify-start gap-2">
           <Link href="#">
@@ -20,7 +19,6 @@ export function AppSidebar() {
       </div>
       <Separator />
 
-      {/* Zona scrollable de recientes */}
       <div className="flex-1 min-h-0 p-4 pt-3">
         <ScrollArea className="size-full pr-2">
           <div className="space-y-1">

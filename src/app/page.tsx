@@ -26,7 +26,6 @@ export default function Home() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      {/* Chat content area with proper scroll */}
       <div className="flex-1 overflow-y-auto">
         <div
           ref={chatContainerRef}
@@ -40,7 +39,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Fixed composer at bottom */}
       <div className="flex-shrink-0">
         <ChatComposer
           value={chat.input}
