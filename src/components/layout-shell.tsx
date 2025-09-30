@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarToggle } from "./sidebar-toggle"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
 import { PanelLeft } from "lucide-react"
@@ -9,11 +8,11 @@ import { motion } from "framer-motion"
 import { LayoutUIProvider } from "@/components/layout-ui-context"
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
 
-  const sbWidth = open ? "16rem" : "0rem"
+  const sbWidth = open ? "16rem" : "4rem"
   type CSSVars = React.CSSProperties & { [key: string]: string | number | undefined }
   const rootStyle: CSSVars = { ["--sb-w"]: sbWidth }
 
@@ -31,12 +30,16 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         {isDesktop && (
           <motion.aside
             key="desktop-aside"
-            initial={{ x: "-100%" }}
-            animate={{ x: open ? 0 : "-100%" }}
+            initial={false}
+            animate={{ width: open ? "16rem" : "4rem" }}
             transition={{ type: "spring", stiffness: 260, damping: 28 }}
-            className="fixed inset-y-0 left-0 z-20 flex w-64 flex-col border-r bg-sidebar"
+            className="fixed inset-y-0 left-0 z-20 flex flex-col border-r bg-sidebar overflow-hidden"
           >
-            <AppSidebar />
+            <AppSidebar 
+              isCollapsed={!open} 
+              onToggle={() => setOpen(true)}
+              onCollapse={() => setOpen(false)}
+            />
           </motion.aside>
         )}
 
@@ -53,16 +56,12 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             className="flex-1 flex flex-col overflow-hidden"
             initial={false}
             animate={{
-              marginLeft: isDesktop ? (open ? "16rem" : 0) : 0
+              marginLeft: isDesktop ? (open ? "16rem" : "4rem") : 0
             }}
             transition={{ type: "spring", stiffness: 260, damping: 28 }}
           >
             {children}
           </motion.main>
-        </div>
-
-        <div className="hidden md:block">
-          <SidebarToggle open={open} onToggle={() => setOpen((v) => !v)} />
         </div>
 
         <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
