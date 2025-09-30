@@ -69,10 +69,11 @@ export function TypingText({ text, cps = 45, enabled = true, showCaret = false, 
 }
 
 type MDProps = Omit<Props, "text"> & { text: string }
-export function TypingMarkdown({ text, cps = 45, enabled = true, showCaret = false, className }: MDProps) {
+export function TypingMarkdown({ text, cps = 30, enabled = true, showCaret = false, className }: MDProps) {
   const [displayText, setDisplayText] = useState("")
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const currentIndexRef = useRef(0)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const targetTextRef = useRef("")
+  const isTypingRef = useRef(false)
 
   useEffect(() => {
     if (!enabled) {
@@ -80,39 +81,52 @@ export function TypingMarkdown({ text, cps = 45, enabled = true, showCaret = fal
       return
     }
 
-    // Si el texto es más corto que lo que ya mostramos, reiniciar
-    if (text.length < currentIndexRef.current) {
-      currentIndexRef.current = 0
-      setDisplayText("")
+    targetTextRef.current = text
+
+    // Si ya estamos escribiendo y el texto solo se extiende, no reiniciar
+    if (isTypingRef.current && text.startsWith(displayText)) {
+      return
     }
 
-    // Solo animar si hay nuevo contenido
-    if (text.length > currentIndexRef.current) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    // Si es un texto completamente nuevo, reiniciar
+    if (!text.startsWith(displayText)) {
+      setDisplayText("")
+      isTypingRef.current = false
+    }
+
+    // Iniciar animación de escritura
+    if (!isTypingRef.current) {
+      isTypingRef.current = true
+      typeText()
+    }
+
+    function typeText() {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
 
-      intervalRef.current = setInterval(() => {
-        setDisplayText(prev => {
-          const nextIndex = currentIndexRef.current + 1
-          if (nextIndex <= text.length) {
-            currentIndexRef.current = nextIndex
-            return text.slice(0, nextIndex)
+      timeoutRef.current = setTimeout(() => {
+        setDisplayText(current => {
+          const target = targetTextRef.current
+          if (current.length < target.length) {
+            const nextChar = target[current.length]
+            const newText = current + nextChar
+            
+            // Continuar escribiendo
+            typeText()
+            return newText
           } else {
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current)
-              intervalRef.current = null
-            }
-            return prev
+            // Terminamos de escribir
+            isTypingRef.current = false
+            return current
           }
         })
       }, 1000 / cps)
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
     }
   }, [text, enabled, cps])

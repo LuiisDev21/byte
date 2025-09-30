@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useRef } from "react"
-import { X } from "lucide-react"
+import { X, PawPrint } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
 
@@ -50,7 +50,10 @@ export function MobileSidebar({ open, onClose }: Props) {
         }`}
       >
         <div className="flex items-center justify-between p-3 border-b">
-          <span className="text-sm font-medium">Menú</span>
+          <div className="flex items-center gap-2">
+            <PawPrint className="size-4 text-primary" />
+            <span className="text-sm font-medium">Byte Chat</span>
+          </div>
           <Button size="icon" variant="ghost" aria-label="Cerrar menú" onClick={onClose}>
             <X className="size-5" />
           </Button>

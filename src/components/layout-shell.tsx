@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarToggle } from "./sidebar-toggle"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 import { motion } from "framer-motion"
 import { LayoutUIProvider } from "@/components/layout-ui-context"
 
@@ -41,9 +41,9 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         )}
 
         <header className="md:hidden fixed inset-x-0 top-0 z-20 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
+          <div className="mx-auto flex h-14 w-full max-w-5xl items-center px-4">
             <Button size="icon" variant="ghost" aria-label="Abrir menú" onClick={() => setMobileOpen(true)}>
-              <Menu className="size-5" />
+              <PanelLeft className="size-5" />
             </Button>
           </div>
         </header>
