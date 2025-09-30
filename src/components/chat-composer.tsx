@@ -4,7 +4,7 @@
  * - Funciones: processImageFile(), handleFileSelect(), handlePaste(), handleDrop()
  *   para procesar imágenes desde archivo, clipboard o arrastrar.
  * - Diseño moderno: campo redondeado con botones integrados (imagen + enviar).
- * - Validación: máximo 5MB, solo imágenes, botón disabled cuando no hay contenido.
+ * - Validación: máximo 10MB, solo imágenes, botón disabled cuando no hay contenido.
  * - API: { value, onChange, onSubmit, disabled?, selectedImage?, onImageSelect?, onImageRemove? }.
  */
 "use client"
@@ -47,8 +47,8 @@ export function ChatComposer({
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('La imagen es muy grande. Máximo 5MB.')
+    if (file.size > 10 * 1024 * 1024) {
+      alert('La imagen es muy grande. Máximo 10MB.')
       return
     }
 
