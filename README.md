@@ -4,13 +4,8 @@
 
 Byte Chat es una aplicación web de chat inteligente que proporciona orientación especializada sobre el cuidado, salud, comportamiento y bienestar de perros, adaptada específicamente al contexto nicaragüense.
 
-## Características Principales
 
-- **Chat en tiempo real** con streaming de respuestas
-- **Especialización exclusiva en perros** - salud, comportamiento, nutrición, adiestramiento
-- **Contexto nicaragüense** - clima tropical, riesgos locales, servicios disponibles
-
-## Stack Tecnológico
+## Tech Stack
 
 ### Frontend
 - **Next.js 15.5.4** - Framework React con App Router
@@ -180,28 +175,10 @@ SYSTEM_PROMPT=optional_custom_prompt
 - **Componentes** - un componente por archivo
 - **Hooks** - lógica reutilizable extraída
 
-### Testing (Futuro)
-- **Jest** + **React Testing Library** para unit tests
-- **Playwright** para E2E testing
-- **Coverage** mínimo del 80%
 
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
-## Reporte de Bugs
 
-Para reportar bugs o solicitar features:
-1. Usar [GitHub Issues](../../issues)
-2. Incluir pasos para reproducir
-3. Especificar navegador y dispositivo
 
-## Soporte
-
-- **Documentación**: Este README
-- **Issues**: GitHub Issues para bugs y features
-- **Discusiones**: GitHub Discussions para preguntas generales
-
----
-
-**Desarrollado para el bienestar canino en Nicaragua**
