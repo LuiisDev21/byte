@@ -18,30 +18,31 @@ export default function Home() {
     chat.send();
   };
 
-  const containerPadding = hasMessages 
-    ? "calc(var(--composer-h) + env(safe-area-inset-bottom))" 
-    : "0";
-
   return (
-    <div className="flex min-h-dvh flex-col">
-      <div
-        ref={chatContainerRef}
-        className="mx-auto w-full max-w-4xl px-2 py-6"
-        style={{ paddingBottom: containerPadding }}
-      >
-        {hasMessages ? (
-          <ChatMessages messages={chat.messages} isLoading={chat.isLoading} />
-        ) : (
-          <EmptyState />
-        )}
+    <div className="flex h-dvh flex-col overflow-hidden">
+      {/* Chat content area with proper scroll */}
+      <div className="flex-1 overflow-y-auto">
+        <div
+          ref={chatContainerRef}
+          className="mx-auto w-full max-w-4xl px-3 md:px-4 py-4 md:py-6 pb-6"
+        >
+          {hasMessages ? (
+            <ChatMessages messages={chat.messages} isLoading={chat.isLoading} />
+          ) : (
+            <EmptyState />
+          )}
+        </div>
       </div>
       
-      <ChatComposer
-        value={chat.input}
-        onChange={chat.setInput}
-        onSubmit={handleSubmit}
-        disabled={chat.isLoading}
-      />
+      {/* Fixed composer at bottom */}
+      <div className="flex-shrink-0">
+        <ChatComposer
+          value={chat.input}
+          onChange={chat.setInput}
+          onSubmit={handleSubmit}
+          disabled={chat.isLoading}
+        />
+      </div>
     </div>
   );
 }

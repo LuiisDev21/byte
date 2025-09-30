@@ -61,9 +61,7 @@
 *::-webkit-scrollbar-thumb:hover {
   background-color: hsl(27 35% 55%);
 }
-:root {
-  --composer-h: 8rem;
-}
+
 
 :root {
   --radius: 0.625rem;
