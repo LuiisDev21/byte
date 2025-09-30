@@ -10,8 +10,14 @@ export default function Home() {
   const chat = useChat();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const hasMessages = chat.messages.length > 0;
+  const lastMessage = hasMessages ? chat.messages[chat.messages.length - 1] : null;
 
-  useAutoScroll(hasMessages, chat.messages.length);
+  useAutoScroll(
+    hasMessages, 
+    chat.messages.length, 
+    chat.isLoading, 
+    lastMessage?.content
+  );
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();

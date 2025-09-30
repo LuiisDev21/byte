@@ -2,6 +2,7 @@ import { ChatMessage as Message } from "@/hooks/use-chat";
 import { Markdown } from "@/components/markdown";
 import { TypingMarkdown } from "@/components/typing-text";
 import { TypingIndicator } from "@/components/typing-indicator";
+import { PawPrint } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
@@ -35,7 +36,7 @@ export function ChatMessage({ message, isLastMessage, isLoading }: ChatMessagePr
 function AssistantAvatar() {
   return (
     <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-      <p className="text-sm font-bold">B</p>
+      <PawPrint className="size-4" />
     </div>
   );
 }
@@ -44,7 +45,7 @@ function AssistantMessageContent({ content, shouldShowTyping }: { content: strin
   if (shouldShowTyping) {
     return content ? (
       <div aria-live="polite" aria-atomic>
-        <TypingMarkdown text={content} speed={40} enabled={true} />
+        <TypingMarkdown text={content} enabled={true} />
       </div>
     ) : (
       <TypingIndicator />

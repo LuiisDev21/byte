@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export function useAutoScroll(hasMessages: boolean, messagesLength: number) {
+export function useAutoScroll(hasMessages: boolean, messagesLength: number, isLoading: boolean, lastMessageContent?: string) {
   useEffect(() => {
     if (!hasMessages) return;
     
@@ -8,10 +8,17 @@ export function useAutoScroll(hasMessages: boolean, messagesLength: number) {
     const scrollContainer = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement;
     if (!scrollContainer) return;
     
-    const animationId = requestAnimationFrame(() => {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    });
+    // Scroll to bottom smoothly
+    const scrollToBottom = () => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    };
+    
+    // Use requestAnimationFrame for better performance
+    const animationId = requestAnimationFrame(scrollToBottom);
     
     return () => cancelAnimationFrame(animationId);
-  }, [hasMessages, messagesLength]);
+  }, [hasMessages, messagesLength, isLoading, lastMessageContent]);
 }
