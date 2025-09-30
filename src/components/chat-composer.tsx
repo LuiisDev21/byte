@@ -217,7 +217,7 @@ export function ChatComposer({
                     ? "Suelta la imagen aquí..." 
                     : selectedImage 
                       ? "Pregunta sobre la imagen..." 
-                      : "Escribe tu mensaje o pega una imagen..."
+                      : "Escribe tu mensaje"
                 }
                 className="w-full h-12 pl-12 pr-12 rounded-full border bg-card shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm"
                 value={value}
