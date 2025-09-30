@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useRef } from "react"
-import { X, PawPrint, PanelLeft } from "lucide-react"
+import { X, PawPrint } from "lucide-react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
 
@@ -55,7 +55,7 @@ export function MobileSidebar({ open, onClose }: Props) {
             <span className="text-sm font-medium">Byte Chat</span>
           </div>
           <Button size="icon" variant="ghost" aria-label="Cerrar menú" onClick={onClose}>
-            <PanelLeft className="size-5" />
+            <X className="size-5" />
           </Button>
         </div>
         <div className="h-[calc(100%-3rem)]">

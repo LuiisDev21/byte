@@ -76,25 +76,36 @@ function hasValidUserInput(messages: CoreMessage[]): boolean {
   })
 }
 
-function handleStreamResponse(result: any): Response {
-  const streamMethods = [
-    'toTextStreamResponse',
-    'toAIStreamResponse',
-    'toDataStreamResponse'
-  ]
+interface StreamResult {
+  toTextStreamResponse?: () => Response
+  toAIStreamResponse?: () => Response
+  toDataStreamResponse?: () => Response
+  toReadableStream?: () => ReadableStream<Uint8Array>
+  text?: () => Promise<string>
+}
 
-  for (const method of streamMethods) {
-    if (typeof result[method] === "function") {
-      return result[method]()
-    }
+function handleStreamResponse(result: StreamResult): Response | Promise<Response> {
+  if (result.toTextStreamResponse) {
+    return result.toTextStreamResponse()
   }
 
-  if (typeof result.toReadableStream === "function") {
+  if (result.toAIStreamResponse) {
+    return result.toAIStreamResponse()
+  }
+
+  if (result.toDataStreamResponse) {
+    return result.toDataStreamResponse()
+  }
+
+  if (result.toReadableStream) {
     return new Response(result.toReadableStream(), { headers: TEXT_HEADERS })
   }
 
-  const text = typeof result.text === "function" ? result.text() : ""
-  return new Response(text, { headers: TEXT_HEADERS })
+  if (result.text) {
+    return result.text().then(text => new Response(text, { headers: TEXT_HEADERS }))
+  }
+
+  return new Response("", { headers: TEXT_HEADERS })
 }
 
 export async function POST(req: NextRequest) {
@@ -122,7 +133,7 @@ export async function POST(req: NextRequest) {
       maxTokens: body.maxTokens,
     })
 
-    return handleStreamResponse(result)
+    return handleStreamResponse(result as StreamResult)
 
   } catch (err) {
     console.error("/api/chat error", err)
