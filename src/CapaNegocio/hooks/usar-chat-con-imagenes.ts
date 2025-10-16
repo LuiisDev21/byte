@@ -12,6 +12,7 @@ interface UsarChatConImagenesRetorno {
   imagenSeleccionada: string | null
   establecerImagenSeleccionada: (imagen: string | null) => void
   estaCargando: boolean
+  establecerEstaCargando: (cargando: boolean) => void
   enviar: () => Promise<void>
   detener: () => void
 }
@@ -148,6 +149,7 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
     imagenSeleccionada,
     establecerImagenSeleccionada,
     estaCargando,
+    establecerEstaCargando,
     enviar,
     detener
   }

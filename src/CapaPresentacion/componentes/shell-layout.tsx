@@ -8,6 +8,7 @@
  */
 "use client"
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import { SidebarApp } from "@/CapaPresentacion/componentes/sidebar-app"
 import { SidebarMovil } from "@/CapaPresentacion/componentes/sidebar-movil"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
@@ -16,9 +17,14 @@ import { motion } from "framer-motion"
 import { LayoutUIProvider as ProveedorLayoutUI } from "@/CapaPresentacion/componentes/contexto-ui-layout"
 
 export function ShellLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const [abierto, establecerAbierto] = useState(false)
   const [movilAbierto, establecerMovilAbierto] = useState(false)
   const [esEscritorio, establecerEsEscritorio] = useState(false)
+
+  // Rutas donde no se muestra el sidebar
+  const rutasSinSidebar = ["/", "/login"]
+  const mostrarSidebar = !rutasSinSidebar.includes(pathname)
 
   const anchoSb = abierto ? "16rem" : "4rem"
   type VarsCSS = React.CSSProperties & { [key: string]: string | number | undefined }
@@ -35,7 +41,7 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
   return (
     <ProveedorLayoutUI value={{ esEscritorio, sidebarAbierto: abierto }}>
       <div data-scroll-root className="relative h-dvh overflow-hidden" style={estiloRaiz}>
-        {esEscritorio && (
+        {mostrarSidebar && esEscritorio && (
           <motion.aside
             key="desktop-aside"
             initial={false}
@@ -51,20 +57,22 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
           </motion.aside>
         )}
 
-        <header className="md:hidden fixed inset-x-0 top-0 z-20 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="mx-auto flex h-14 w-full max-w-5xl items-center px-4">
-            <Button size="icon" variant="ghost" aria-label="Abrir menú" onClick={() => establecerMovilAbierto(true)}>
-              <PanelLeft className="size-5" />
-            </Button>
-          </div>
-        </header>
+        {mostrarSidebar && (
+          <header className="md:hidden fixed inset-x-0 top-0 z-20 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="mx-auto flex h-14 w-full max-w-5xl items-center px-4">
+              <Button size="icon" variant="ghost" aria-label="Abrir menú" onClick={() => establecerMovilAbierto(true)}>
+                <PanelLeft className="size-5" />
+              </Button>
+            </div>
+          </header>
+        )}
 
-        <div className="h-dvh pt-14 md:pt-0 flex flex-col">
+        <div className={`h-dvh ${mostrarSidebar ? "pt-14 md:pt-0" : ""} flex flex-col`}>
           <motion.main
             className="flex-1 flex flex-col overflow-hidden"
             initial={false}
             animate={{
-              marginLeft: esEscritorio ? (abierto ? "16rem" : "4rem") : 0
+              marginLeft: mostrarSidebar && esEscritorio ? (abierto ? "16rem" : "4rem") : 0
             }}
             transition={{ type: "spring", stiffness: 260, damping: 28 }}
           >
@@ -72,7 +80,7 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
           </motion.main>
         </div>
 
-        <SidebarMovil open={movilAbierto} onClose={() => establecerMovilAbierto(false)} />
+        {mostrarSidebar && <SidebarMovil open={movilAbierto} onClose={() => establecerMovilAbierto(false)} />}
       </div>
     </ProveedorLayoutUI>
   )

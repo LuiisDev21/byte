@@ -1,54 +1,64 @@
 "use client"
-import { useRef } from "react"
-import { EstadoVacio } from "@/CapaPresentacion/componentes/estado-vacio"
-import { CompositorChat } from "@/CapaPresentacion/componentes/compositor-chat"
-import { MensajesChat } from "@/CapaPresentacion/componentes/mensajes-chat"
-import { useUsarChatConImagenes } from "@/CapaNegocio/hooks/usar-chat-con-imagenes"
-import { useUsarDesplazamientoAutomatico } from "@/CapaNegocio/hooks/usar-desplazamiento-automatico"
+
+import Link from "next/link"
+import { Button } from "@/CapaPresentacion/componentes/ui/boton"
+import { PawPrint, MessageSquare, Shield, Zap } from "lucide-react"
 
 export default function PaginaInicio() {
-  const chat = useUsarChatConImagenes()
-  const refContenedorChat = useRef<HTMLDivElement>(null)
-  const tieneMensajes = chat.mensajes.length > 0
-  const ultimoMensaje = tieneMensajes ? chat.mensajes[chat.mensajes.length - 1] : null
-
-  useUsarDesplazamientoAutomatico(
-    tieneMensajes,
-    chat.mensajes.length,
-    chat.estaCargando,
-    typeof ultimoMensaje?.content === "string" ? ultimoMensaje.content : ""
-  )
-
-  const manejarEnvio: React.FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault()
-    chat.enviar()
-  }
-
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
-        <div
-          ref={refContenedorChat}
-          className="mx-auto w-full max-w-4xl px-3 md:px-4 py-4 md:py-6 pb-6"
-        >
-          {tieneMensajes ? (
-            <MensajesChat messages={chat.mensajes} isLoading={chat.estaCargando} />
-          ) : (
-            <EstadoVacio />
-          )}
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="mx-auto max-w-4xl text-center space-y-8">
+        <div className="flex justify-center mb-8">
+          <PawPrint className="size-20 text-primary" />
         </div>
-      </div>
+        
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+          Byte Chat
+        </h1>
+        
+        <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+          Tu asistente AI inteligente. Chatea, aprende y explora con la ayuda de inteligencia artificial.
+        </p>
 
-      <div className="flex-shrink-0">
-        <CompositorChat
-          value={chat.entrada}
-          onChange={chat.establecerEntrada}
-          onSubmit={manejarEnvio}
-          disabled={chat.estaCargando}
-          selectedImage={chat.imagenSeleccionada}
-          onImageSelect={chat.establecerImagenSeleccionada}
-          onImageRemove={() => chat.establecerImagenSeleccionada(null)}
-        />
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+          <Button asChild size="lg" className="text-lg">
+            <Link href="/chat">
+              <MessageSquare className="size-5 mr-2" />
+              Comenzar a chatear
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="text-lg">
+            <Link href="/login">
+              Iniciar sesión
+            </Link>
+          </Button>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mt-16 text-left">
+          <div className="p-6 rounded-lg border bg-card">
+            <MessageSquare className="size-8 text-primary mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Chat Inteligente</h3>
+            <p className="text-sm text-muted-foreground">
+              Conversaciones naturales con IA avanzada que entiende contexto e imágenes.
+            </p>
+          </div>
+          
+          <div className="p-6 rounded-lg border bg-card">
+            <Shield className="size-8 text-primary mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Privado y Seguro</h3>
+            <p className="text-sm text-muted-foreground">
+              Tus conversaciones están protegidas. Usa sin cuenta o guarda tu historial.
+            </p>
+          </div>
+          
+          <div className="p-6 rounded-lg border bg-card">
+            <Zap className="size-8 text-primary mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Rápido y Gratuito</h3>
+            <p className="text-sm text-muted-foreground">
+              Respuestas instantáneas sin costo. Comienza a usar ahora mismo.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
