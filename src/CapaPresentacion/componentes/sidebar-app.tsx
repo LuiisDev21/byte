@@ -5,6 +5,7 @@ import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 import { Separator } from "@/CapaPresentacion/componentes/ui/separador"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 import { ScrollArea } from "@/CapaPresentacion/componentes/ui/area-desplazamiento"
+import { ModalEliminarConversacion } from "@/CapaPresentacion/componentes/modal-eliminar-conversacion"
 import { useState, useEffect } from "react"
 import { useAutenticacion } from "@/CapaNegocio/contextos/contexto-autenticacion"
 import { useConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
@@ -21,6 +22,8 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
   const { usuario, cerrarSesion } = useAutenticacion()
   const { conversaciones, crearNuevaConversacion, eliminarConversacionPorId, conversacionActual, establecerConversacionActual } = useConversaciones()
   const [estaHover, establecerEstaHover] = useState(false)
+  const [modalEliminarAbierto, establecerModalEliminarAbierto] = useState(false)
+  const [conversacionAEliminar, establecerConversacionAEliminar] = useState<{ id: string; titulo: string } | null>(null)
 
   useEffect(() => {
     if (isCollapsed) {
@@ -51,20 +54,35 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
     }
   }
 
-  const manejarEliminar = async (id: string, e: React.MouseEvent) => {
+  const manejarEliminar = (id: string, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
-    if (confirm("¿Eliminar esta conversación?")) {
-      try {
-        await eliminarConversacionPorId(id)
-        if (conversacionActual === id) {
-          router.push("/chat")
-        }
-      } catch (error) {
-        console.error("Error eliminando conversación:", error)
-      }
+    const conversacion = conversaciones.find(c => c.id === id)
+    if (conversacion) {
+      establecerConversacionAEliminar({ id, titulo: conversacion.titulo })
+      establecerModalEliminarAbierto(true)
     }
+  }
+
+  const confirmarEliminar = async () => {
+    if (!conversacionAEliminar) return
+    
+    try {
+      await eliminarConversacionPorId(conversacionAEliminar.id)
+      if (conversacionActual === conversacionAEliminar.id) {
+        router.push("/chat")
+      }
+      establecerModalEliminarAbierto(false)
+      establecerConversacionAEliminar(null)
+    } catch (error) {
+      console.error("Error eliminando conversación:", error)
+    }
+  }
+
+  const cancelarEliminar = () => {
+    establecerModalEliminarAbierto(false)
+    establecerConversacionAEliminar(null)
   }
 
   if (isCollapsed) {
@@ -146,28 +164,39 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
                     No hay conversaciones
                   </li>
                 ) : (
-                  conversaciones.map((conv) => (
-                    <li key={conv.id} className="group relative">
-                      <Link
-                        href={`/chat/${conv.id}`}
-                        className={`block truncate rounded-md px-2 py-1.5 text-sm hover:bg-accent pr-8 ${
-                          conversacionActual === conv.id ? "bg-accent" : ""
-                        }`}
-                        title={conv.titulo}
-                        onClick={() => establecerConversacionActual(conv.id)}
-                      >
-                        {conv.titulo}
-                      </Link>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 size-6 opacity-0 group-hover:opacity-100"
-                        onClick={(e) => manejarEliminar(conv.id, e)}
-                      >
-                        <Trash2 className="size-3" />
-                      </Button>
-                    </li>
-                  ))
+                  conversaciones.map((conv) => {
+                    const tituloLimitado = conv.titulo.length > 18 ? conv.titulo.slice(0, 18) + "..." : conv.titulo
+                    return (
+                      <li key={conv.id} className="group relative w-full" style={{ minWidth: 0 }}>
+                        <div className="flex items-center gap-1 w-full min-w-0">
+                          <Link
+                            href={`/chat/${conv.id}`}
+                            className={`flex-1 min-w-0 truncate rounded-md px-2 py-1.5 text-sm hover:bg-accent overflow-hidden ${
+                              conversacionActual === conv.id ? "bg-accent" : ""
+                            }`}
+                            title={conv.titulo}
+                            onClick={() => establecerConversacionActual(conv.id)}
+                            style={{ maxWidth: 'calc(100% - 32px)' }}
+                          >
+                            <span className="block truncate">{tituloLimitado}</span>
+                          </Link>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className={`size-7 shrink-0 flex-shrink-0 z-10 ${isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              manejarEliminar(conv.id, e)
+                            }}
+                            style={{ flexShrink: 0 }}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                      </li>
+                    )
+                  })
                 )}
               </ul>
             </div>
@@ -189,6 +218,13 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
           </div>
         </>
       )}
+
+      <ModalEliminarConversacion
+        abierto={modalEliminarAbierto}
+        tituloConversacion={conversacionAEliminar?.titulo || ""}
+        onConfirmar={confirmarEliminar}
+        onCancelar={cancelarEliminar}
+      />
     </nav>
   )
 }

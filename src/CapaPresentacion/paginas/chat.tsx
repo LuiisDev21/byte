@@ -15,7 +15,7 @@ import { useChatPersistente } from "@/CapaNegocio/hooks/usar-chat-persistente"
 export default function PaginaChat() {
   const params = useParams()
   const { usuario } = useAutenticacion()
-  const { establecerConversacionActual, conversacionActual, crearNuevaConversacion } = useConversaciones()
+  const { establecerConversacionActual, conversacionActual, crearNuevaConversacion, conversaciones, actualizarTitulo } = useConversaciones()
   const chatLocal = useUsarChatConImagenes()
   const chatPersistente = useChatPersistente()
   const refContenedorChat = useRef<HTMLDivElement>(null)
@@ -112,20 +112,6 @@ export default function PaginaChat() {
         chatLocal.establecerEstaCargando(true)
 
         let idConversacion = conversacionActual
-        if (!idConversacion) {
-          const textoMensaje = entradaTexto.trim().slice(0, 50) || "Nueva conversación"
-          
-          idConversacion = await crearNuevaConversacion()
-          establecerConversacionActual(idConversacion)
-          
-          if (textoMensaje !== "Nueva conversación") {
-            const { actualizarTituloConversacion } = await import("@/CapaDatos/repositorios/conversaciones")
-            await actualizarTituloConversacion(idConversacion, textoMensaje)
-          }
-          
-          window.history.pushState({}, "", `/chat/${idConversacion}`)
-        }
-
         const contenidoMensaje: Array<{ type: "text"; text: string } | { type: "image"; image: string }> = []
         
         if (entradaTexto.trim()) {
@@ -134,6 +120,19 @@ export default function PaginaChat() {
         
         if (imagenActual) {
           contenidoMensaje.push({ type: "image" as const, image: imagenActual })
+        }
+
+        if (!idConversacion) {
+          const textoMensaje = entradaTexto.trim().slice(0, 50)
+          
+          idConversacion = await crearNuevaConversacion()
+          establecerConversacionActual(idConversacion)
+          
+          if (textoMensaje) {
+            await actualizarTitulo(idConversacion, textoMensaje)
+          }
+          
+          window.history.pushState({}, "", `/chat/${idConversacion}`)
         }
         
         const mensajeUsuario: import("@/CapaDatos/tipos/mensaje").Mensaje = {
@@ -211,6 +210,37 @@ export default function PaginaChat() {
         }
         
         await guardarMensaje(idConversacion, "assistant", respuestaAcumulada)
+
+        const conversacion = conversaciones.find(c => c.id === idConversacion)
+        if (conversacion && conversacion.titulo === "Nueva conversación") {
+          const extraerTexto = (contenido: any): string => {
+            if (typeof contenido === "string") {
+              return contenido.trim()
+            }
+            if (Array.isArray(contenido)) {
+              const textoPartes = contenido
+                .filter(parte => parte.type === "text" && typeof parte.text === "string")
+                .map(parte => parte.text.trim())
+                .join(" ")
+              return textoPartes
+            }
+            return ""
+          }
+
+          const textoUsuario = extraerTexto(mensajeUsuario.content)
+          const textoAsistente = respuestaAcumulada.trim()
+          
+          let nuevoTitulo = "Nueva conversación"
+          if (textoUsuario) {
+            nuevoTitulo = textoUsuario.slice(0, 50)
+          } else if (textoAsistente) {
+            nuevoTitulo = textoAsistente.slice(0, 50)
+          }
+
+          if (nuevoTitulo && nuevoTitulo !== "Nueva conversación") {
+            await actualizarTitulo(idConversacion, nuevoTitulo)
+          }
+        }
       } catch (error) {
         console.error("Error:", error)
       } finally {
