@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo, memo, useCallback } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 import { motion, useInView } from "framer-motion"
 import { 
@@ -43,13 +44,17 @@ const estadisticas = [
   { valor: "98%", etiqueta: "Satisfacción" }
 ]
 
-function ContadorAnimado({ valor, duracion = 2 }: { valor: string; duracion?: number }) {
+const ContadorAnimado = memo(({ valor, duracion = 2 }: { valor: string; duracion?: number }) => {
   const [contador, establecerContador] = useState(0)
-  const esNumeroSimple = /^\d+[K%]?\+?$/.test(valor)
-  const numeroObjetivo = esNumeroSimple ? parseInt(valor.replace(/\D/g, "")) : null
-  const esPorcentaje = valor.includes("%")
-  const esK = valor.includes("K")
-  const sufijo = valor.replace(/[\d.]/g, "")
+  
+  const { esNumeroSimple, numeroObjetivo, esPorcentaje, esK, sufijo } = useMemo(() => {
+    const esNumeroSimple = /^\d+[K%]?\+?$/.test(valor)
+    const numeroObjetivo = esNumeroSimple ? parseInt(valor.replace(/\D/g, "")) : null
+    const esPorcentaje = valor.includes("%")
+    const esK = valor.includes("K")
+    const sufijo = valor.replace(/[\d.]/g, "")
+    return { esNumeroSimple, numeroObjetivo, esPorcentaje, esK, sufijo }
+  }, [valor])
 
   useEffect(() => {
     if (!esNumeroSimple || !numeroObjetivo) return
@@ -69,39 +74,58 @@ function ContadorAnimado({ valor, duracion = 2 }: { valor: string; duracion?: nu
     return () => clearInterval(intervalo)
   }, [numeroObjetivo, duracion, esNumeroSimple])
 
+  const mostrar = useMemo(() => {
+    if (!esNumeroSimple) return valor
+    
+    if (esPorcentaje) {
+      return `${contador}%`
+    } else if (esK) {
+      return `${contador}K${sufijo.replace("K", "")}`
+    } else {
+      return `${contador.toLocaleString()}${sufijo}`
+    }
+  }, [contador, esNumeroSimple, esPorcentaje, esK, sufijo, valor])
+
   if (!esNumeroSimple) {
     return <span>{valor}</span>
   }
-
-  let mostrar = ""
-  if (esPorcentaje) {
-    mostrar = `${contador}%`
-  } else if (esK) {
-    mostrar = `${contador}K${sufijo.replace("K", "")}`
-  } else {
-    mostrar = `${contador.toLocaleString()}${sufijo}`
-  }
   
   return <span>{mostrar}</span>
-}
+})
+
+ContadorAnimado.displayName = "ContadorAnimado"
 
 export default function PaginaInicio() {
   const [estaMontado, establecerEstaMontado] = useState(false)
-  const refHero = useRef(null)
-  const refCaracteristicas = useRef(null)
-  const refCTA = useRef(null)
-  const refEstadisticas = useRef(null)
-  const refFooter = useRef(null)
+  const refHero = useRef<HTMLElement>(null)
+  const refCaracteristicas = useRef<HTMLElement>(null)
+  const refCTA = useRef<HTMLElement>(null)
+  const refEstadisticas = useRef<HTMLElement>(null)
+  const refFooter = useRef<HTMLElement>(null)
   
   useEffect(() => {
     establecerEstaMontado(true)
   }, [])
   
-  const enVistaHero = useInView(refHero, { once: true, margin: "-50px" })
-  const enVistaCaracteristicas = useInView(refCaracteristicas, { once: true, margin: "-50px" })
-  const enVistaCTA = useInView(refCTA, { once: true, margin: "-50px" })
-  const enVistaEstadisticas = useInView(refEstadisticas, { once: true, margin: "-50px" })
-  const enVistaFooter = useInView(refFooter, { once: true, margin: "-50px" })
+  const opcionesVista = { once: true, amount: 0.3 } as const
+  
+  const enVistaHero = useInView(refHero, opcionesVista)
+  const enVistaCaracteristicas = useInView(refCaracteristicas, opcionesVista)
+  const enVistaCTA = useInView(refCTA, opcionesVista)
+  const enVistaEstadisticas = useInView(refEstadisticas, opcionesVista)
+  const enVistaFooter = useInView(refFooter, opcionesVista)
+
+  const variantesHero = useMemo(() => ({
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  }), [])
+
+  const beneficios = useMemo(() => ["100% Gratis", "Sin registro", "Respuestas instantáneas"], [])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -110,6 +134,7 @@ export default function PaginaInicio() {
         animate={estaMontado ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
+        role="banner"
       >
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <motion.div 
@@ -133,24 +158,17 @@ export default function PaginaInicio() {
         </div>
       </motion.header>
 
-      <section className="w-full bg-background py-12 md:py-20" ref={refHero}>
+      <section className="w-full bg-background py-12 md:py-20" ref={refHero} aria-labelledby="hero-heading">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
             <motion.div 
               initial="hidden"
               animate={enVistaHero ? "visible" : "hidden"}
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: {
-                    staggerChildren: 0.2
-                  }
-                }
-              }}
+              variants={variantesHero}
               className="space-y-6"
             >
               <motion.h1
+                id="hero-heading"
                 variants={{
                   hidden: { opacity: 0, y: 30 },
                   visible: { opacity: 1, y: 0 }
@@ -192,10 +210,7 @@ export default function PaginaInicio() {
               className="relative"
             >
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl rotate-2">
-                <motion.img
-                  src="/hero.svg"
-                  alt="ByteChat Hero"
-                  className="w-full h-full object-cover"
+                <motion.div
                   initial={{ scale: 1, opacity: 0 }}
                   animate={enVistaHero ? { 
                     scale: [1, 1.05, 1],
@@ -213,16 +228,28 @@ export default function PaginaInicio() {
                       ease: [0.16, 1, 0.3, 1]
                     }
                   }}
-                />
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src="/hero.webp"
+                    alt="ByteChat - Tu Experto AI en Perros"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
+                    quality={90}
+                  />
+                </motion.div>
               </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      <section className="w-full bg-background py-16" ref={refCaracteristicas}>
+      <section className="w-full bg-background py-16" ref={refCaracteristicas} aria-labelledby="caracteristicas-heading">
         <div className="container mx-auto px-4">
           <motion.h2
+            id="caracteristicas-heading"
             initial={{ opacity: 0, y: 20 }}
             animate={enVistaCaracteristicas ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -243,17 +270,25 @@ export default function PaginaInicio() {
                   className="bg-card rounded-xl p-6 shadow-sm border border-border"
                 >
                   <motion.div 
-                    className="aspect-[4/3] bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden"
+                    className="aspect-[4/3] bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden relative"
                     whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
                   >
-                    <motion.img
-                      src={`/card${indice + 1}.svg`}
-                      alt={caracteristica.titulo}
-                      className="w-full h-full object-cover"
+                    <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={enVistaCaracteristicas ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.7, delay: indice * 0.12 + 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    />
+                      className="relative w-full h-full"
+                    >
+                      <Image
+                        src={`/card${indice + 1}.webp`}
+                        alt={caracteristica.titulo}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        loading="lazy"
+                        quality={85}
+                      />
+                    </motion.div>
                   </motion.div>
                   <h3 className="text-xl font-semibold mb-3 text-card-foreground">
                     {caracteristica.titulo}
@@ -310,7 +345,7 @@ export default function PaginaInicio() {
               transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-wrap justify-center gap-6 pt-4"
             >
-              {["100% Gratis", "Sin registro", "Respuestas instantáneas"].map((texto, indice) => (
+              {beneficios.map((texto, indice) => (
                 <motion.div
                   key={indice}
                   initial={{ opacity: 0, x: -20 }}
@@ -359,7 +394,7 @@ export default function PaginaInicio() {
         </div>
       </section>
 
-      <footer className="w-full bg-[#4A3220] py-12" ref={refFooter}>
+      <footer className="w-full bg-[#4A3220] py-12" ref={refFooter} role="contentinfo">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={enVistaFooter ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -382,15 +417,23 @@ export default function PaginaInicio() {
             </div>
 
             <div className="flex items-center justify-center">
-              <motion.img
-                src="/footerpic.svg"
-                alt="Footer"
+              <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={enVistaFooter ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
-                className="w-full h-auto max-w-full object-contain"
-              />
+                className="relative w-full aspect-video max-w-md"
+              >
+                <Image
+                  src="/footerpic.webp"
+                  alt="ByteChat - Cuidado canino"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  loading="lazy"
+                  quality={80}
+                />
+              </motion.div>
             </div>
 
             <div className="space-y-6">
