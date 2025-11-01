@@ -75,14 +75,23 @@ export default function PaginaChat() {
         }
 
         // Crear mensaje del usuario
+        const contenidoMensaje: Array<{ type: "text"; text: string } | { type: "image"; image: string }> = []
+        
+        if (entradaTexto.trim()) {
+          contenidoMensaje.push({ type: "text" as const, text: entradaTexto.trim() })
+        }
+        
+        if (imagenActual) {
+          contenidoMensaje.push({ type: "image" as const, image: imagenActual })
+        }
+        
         const mensajeUsuario: import("@/CapaDatos/tipos/mensaje").Mensaje = {
           id: Date.now().toString(),
           role: "user" as const,
-          content: imagenActual 
-            ? [
-                { type: "text" as const, text: entradaTexto },
-                { type: "image" as const, image: imagenActual }
-              ]
+          content: contenidoMensaje.length === 1 && contenidoMensaje[0].type === "text"
+            ? contenidoMensaje[0].text
+            : contenidoMensaje.length > 0
+            ? contenidoMensaje
             : entradaTexto,
           timestamp: new Date()
         }
@@ -105,18 +114,31 @@ export default function PaginaChat() {
 
         if (!response.ok) throw new Error("Error en la respuesta")
 
-        const reader = response.body?.getReader()
+        if (!response.body) {
+          throw new Error("La respuesta no contiene un cuerpo válido para streaming")
+        }
+
+        const reader = response.body.getReader()
         const decoder = new TextDecoder()
         let respuestaCompleta = ""
 
-        if (reader) {
+        try {
           while (true) {
             const { done, value } = await reader.read()
             if (done) break
             
-            const chunk = decoder.decode(value)
-            respuestaCompleta += chunk
+            if (value) {
+              const chunk = decoder.decode(value, { stream: true })
+              respuestaCompleta += chunk
+            }
           }
+          
+          const chunkFinal = decoder.decode()
+          if (chunkFinal) {
+            respuestaCompleta += chunkFinal
+          }
+        } finally {
+          reader.releaseLock()
         }
 
         // Crear mensaje del asistente

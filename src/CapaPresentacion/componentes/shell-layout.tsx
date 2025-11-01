@@ -38,9 +38,16 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", alCambiar)
   }, [])
 
+  // Para rutas sin sidebar, permitir scroll normal
+  const permitirScroll = !mostrarSidebar
+
   return (
     <ProveedorLayoutUI value={{ esEscritorio, sidebarAbierto: abierto }}>
-      <div data-scroll-root className="relative h-dvh overflow-hidden" style={estiloRaiz}>
+      <div 
+        data-scroll-root 
+        className={`relative ${permitirScroll ? "min-h-screen" : "h-dvh overflow-hidden"}`} 
+        style={estiloRaiz}
+      >
         {mostrarSidebar && esEscritorio && (
           <motion.aside
             key="desktop-aside"
@@ -67,9 +74,9 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
           </header>
         )}
 
-        <div className={`h-dvh ${mostrarSidebar ? "pt-14 md:pt-0" : ""} flex flex-col`}>
+        <div className={`${permitirScroll ? "" : "h-dvh"} ${mostrarSidebar ? "pt-14 md:pt-0" : ""} ${permitirScroll ? "" : "flex flex-col"}`}>
           <motion.main
-            className="flex-1 flex flex-col overflow-hidden"
+            className={permitirScroll ? "" : "flex-1 flex flex-col overflow-hidden"}
             initial={false}
             animate={{
               marginLeft: mostrarSidebar && esEscritorio ? (abierto ? "16rem" : "4rem") : 0
