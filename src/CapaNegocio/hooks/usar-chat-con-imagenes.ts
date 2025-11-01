@@ -3,7 +3,7 @@
  */
 "use client"
 import { useState, useCallback } from "react"
-import { Mensaje, ContenidoMensaje, ContenidoTexto, ContenidoImagen } from "@/CapaDatos/tipos/mensaje"
+import { Mensaje, ContenidoTexto, ContenidoImagen } from "@/CapaDatos/tipos/mensaje"
 
 interface UsarChatConImagenesRetorno {
   mensajes: Mensaje[]
@@ -132,7 +132,7 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
       establecerEstaCargando(false)
       establecerControladorAborto(null)
     }
-  }, [entrada, imagenSeleccionada, mensajes, estaCargando, controladorAborto])
+  }, [entrada, imagenSeleccionada, mensajes, estaCargando])
 
   return {
     mensajes,

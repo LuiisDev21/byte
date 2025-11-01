@@ -11,6 +11,7 @@ import { useUsarDesplazamientoAutomatico } from "@/CapaNegocio/hooks/usar-despla
 import { useConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
 import { useAutenticacion } from "@/CapaNegocio/contextos/contexto-autenticacion"
 import { useChatPersistente } from "@/CapaNegocio/hooks/usar-chat-persistente"
+import type { ContenidoMensaje } from "@/CapaDatos/tipos/mensaje"
 
 export default function PaginaChat() {
   const params = useParams()
@@ -213,7 +214,7 @@ export default function PaginaChat() {
 
         const conversacion = conversaciones.find(c => c.id === idConversacion)
         if (conversacion && conversacion.titulo === "Nueva conversación") {
-          const extraerTexto = (contenido: any): string => {
+          const extraerTexto = (contenido: ContenidoMensaje): string => {
             if (typeof contenido === "string") {
               return contenido.trim()
             }

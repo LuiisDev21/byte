@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, useMemo, memo, useCallback } from "react"
+import { useEffect, useRef, useState, useMemo, memo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
@@ -259,7 +259,6 @@ export default function PaginaInicio() {
           </motion.h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {caracteristicas.map((caracteristica, indice) => {
-              const Icon = caracteristica.icon
               return (
                 <motion.div
                   key={indice}

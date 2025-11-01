@@ -7,6 +7,7 @@
  * - Validación: máximo 10MB, solo imágenes, botón disabled cuando no hay contenido.
  */
 "use client"
+import { useCallback } from "react"
 import { SendHorizonal, ImageIcon, X } from "lucide-react"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 import { Input } from "@/CapaPresentacion/componentes/ui/entrada"
@@ -38,7 +39,7 @@ export function CompositorChat({
   const [estaArrastrando, establecerEstaArrastrando] = useState(false)
   const tieneContenido = value.trim() || selectedImage
 
-  const procesarArchivoImagen = async (archivo: File) => {
+  const procesarArchivoImagen = useCallback(async (archivo: File) => {
     if (!onImageSelect) return
 
     if (!archivo.type.startsWith('image/')) {
@@ -70,7 +71,7 @@ export function CompositorChat({
       alert('Error al procesar la imagen')
       establecerEstaCargando(false)
     }
-  }
+  }, [onImageSelect])
 
   const manejarSeleccionArchivo = async (evento: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = evento.target.files?.[0]
@@ -162,7 +163,7 @@ export function CompositorChat({
 
     document.addEventListener('paste', manejarPegarGlobal)
     return () => document.removeEventListener('paste', manejarPegarGlobal)
-  }, [onImageSelect, disabled])
+  }, [procesarArchivoImagen, disabled])
 
   return (
     <div className="w-full bg-background/95 backdrop-blur-sm border-t">
