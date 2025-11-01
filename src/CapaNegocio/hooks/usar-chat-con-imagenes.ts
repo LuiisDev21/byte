@@ -39,7 +39,6 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
     establecerControladorAborto(controller)
     establecerEstaCargando(true)
 
-    // Crear contenido del mensaje
     const contenidoMensaje: (ContenidoTexto | ContenidoImagen)[] = []
     
     if (entrada.trim()) {
@@ -50,7 +49,6 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
       contenidoMensaje.push({ type: "image", image: imagenSeleccionada })
     }
 
-    // Crear mensaje del usuario
     const mensajeUsuario: Mensaje = {
       id: Date.now().toString(),
       role: "user",
@@ -60,10 +58,8 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
       timestamp: new Date()
     }
 
-    // Agregar mensaje del usuario
     establecerMensajes(prev => [...prev, mensajeUsuario])
 
-    // Limpiar entrada e imagen
     establecerEntrada("")
     establecerImagenSeleccionada(null)
 
@@ -86,7 +82,6 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
         throw new Error(`Error HTTP! estado: ${respuesta.status}`)
       }
 
-      // Crear mensaje del asistente
       const mensajeAsistente: Mensaje = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -96,7 +91,6 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
 
       establecerMensajes(prev => [...prev, mensajeAsistente])
 
-      // Leer stream de respuesta
       const lector = respuesta.body?.getReader()
       const decodificador = new TextDecoder()
 
@@ -111,7 +105,6 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
           const fragmento = decodificador.decode(value, { stream: true })
           textoAcumulado += fragmento
           
-          // Actualizar mensaje del asistente
           establecerMensajes(prev => prev.map(msg => 
             msg.id === mensajeAsistente.id 
               ? { ...msg, content: textoAcumulado }
@@ -126,7 +119,6 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
       } else {
         console.error("Error al enviar mensaje:", error)
         
-        // Agregar mensaje de error
         const mensajeError: Mensaje = {
           id: (Date.now() + 2).toString(),
           role: "assistant",

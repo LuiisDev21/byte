@@ -22,7 +22,6 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
   const [movilAbierto, establecerMovilAbierto] = useState(false)
   const [esEscritorio, establecerEsEscritorio] = useState(false)
 
-  // Rutas donde no se muestra el sidebar
   const rutasSinSidebar = ["/", "/login"]
   const mostrarSidebar = !rutasSinSidebar.includes(pathname)
 
@@ -38,7 +37,6 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", alCambiar)
   }, [])
 
-  // Para rutas sin sidebar, permitir scroll normal
   const permitirScroll = !mostrarSidebar
 
   return (

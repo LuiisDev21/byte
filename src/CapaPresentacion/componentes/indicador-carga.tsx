@@ -5,15 +5,15 @@
  * - Accesibilidad: aria-live="polite" y aria-atomic para screen readers.
  */
 import { IndicadorEscritura } from "@/CapaPresentacion/componentes/indicador-escritura"
-import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
+import { AvatarAsistente } from "@/CapaPresentacion/componentes/mensaje-chat"
 
 export function IndicadorCarga() {
   return (
     <div className="flex items-center gap-2 justify-start" aria-live="polite" aria-atomic>
-      <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-        <ByteIcon className="size-4" />
+      <AvatarAsistente />
+      <div className="max-w-[85%] rounded-lg p-3 border bg-card">
+        <IndicadorEscritura />
       </div>
-      <IndicadorEscritura />
     </div>
   )
 }

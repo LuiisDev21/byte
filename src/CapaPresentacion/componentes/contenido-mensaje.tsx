@@ -13,7 +13,6 @@ interface PropiedadesContenidoMensaje {
 }
 
 export function ContenidoMensaje({ content, role, isTyping = false }: PropiedadesContenidoMensaje) {
-  // Si el contenido es string, mostrarlo como texto simple
   if (typeof content === "string") {
     if (role === "assistant") {
       return (
@@ -27,7 +26,6 @@ export function ContenidoMensaje({ content, role, isTyping = false }: Propiedade
     return <p className="whitespace-pre-wrap">{content}</p>
   }
 
-  // Si el contenido es array, renderizar cada parte
   if (Array.isArray(content)) {
     return (
       <div className="space-y-3">

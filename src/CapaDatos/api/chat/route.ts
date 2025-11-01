@@ -55,7 +55,6 @@ function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
   return mensajes.map((m): CoreMessage => {
     const role = m.role as "user" | "assistant"
     
-    // Si el contenido es string, convertir a formato de texto
     if (typeof m.content === "string") {
       if (role === "user") {
         return {
@@ -70,9 +69,7 @@ function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
       }
     }
     
-    // Si el contenido es array, mantener el formato multimodal
     if (Array.isArray(m.content)) {
-      // Los mensajes del asistente solo pueden tener texto
       if (role === "assistant") {
         const textoSolo = m.content
           .filter(parte => parte.type === "text")
@@ -85,7 +82,6 @@ function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
         }
       }
       
-      // Los mensajes del usuario pueden tener texto e imágenes
       const contenidoTransformado = m.content.map(parte => {
         if (parte.type === "text") {
           return { type: "text" as const, text: parte.text }
@@ -102,7 +98,6 @@ function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
       }
     }
     
-    // Fallback para contenido vacío
     if (role === "user") {
       return {
         role: "user",
@@ -121,19 +116,15 @@ function tieneEntradaUsuarioValida(mensajes: CoreMessage[]): boolean {
   return mensajes.some((m) => {
     if (m.role !== "user") return false
     
-    // Si el contenido es string
     if (typeof m.content === "string") {
       return m.content.trim().length > 0
     }
     
-    // Si el contenido es array
     if (Array.isArray(m.content)) {
-      // Verificar si hay texto no vacío
       const tieneTexto = m.content.some(parte => 
         parte.type === "text" && "text" in parte && parte.text.trim().length > 0
       )
       
-      // Verificar si hay imagen
       const tieneImagen = m.content.some(parte => 
         parte.type === "image" && "image" in parte && parte.image
       )
@@ -144,8 +135,6 @@ function tieneEntradaUsuarioValida(mensajes: CoreMessage[]): boolean {
     return false
   })
 }
-
-// Eliminada la interfaz ResultadoStream y la función manejarRespuestaStream
 
 export async function POST(req: NextRequest) {
   try {

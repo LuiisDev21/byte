@@ -1,10 +1,11 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { EstadoVacio } from "@/CapaPresentacion/componentes/estado-vacio"
 import { CompositorChat } from "@/CapaPresentacion/componentes/compositor-chat"
 import { MensajesChat } from "@/CapaPresentacion/componentes/mensajes-chat"
+import { BotonScrollAbajo } from "@/CapaPresentacion/componentes/boton-scroll-abajo"
 import { useUsarChatConImagenes } from "@/CapaNegocio/hooks/usar-chat-con-imagenes"
 import { useUsarDesplazamientoAutomatico } from "@/CapaNegocio/hooks/usar-desplazamiento-automatico"
 import { useConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
@@ -18,63 +19,113 @@ export default function PaginaChat() {
   const chatLocal = useUsarChatConImagenes()
   const chatPersistente = useChatPersistente()
   const refContenedorChat = useRef<HTMLDivElement>(null)
+  const refContenedorScroll = useRef<HTMLDivElement>(null)
+  const [mostrarBotonScroll, establecerMostrarBotonScroll] = useState(false)
+  const [autoScrollHabilitado, establecerAutoScrollHabilitado] = useState(true)
 
-  // Usar chat persistente si hay usuario, sino usar local
   const chat = usuario ? chatPersistente : chatLocal
   const tieneMensajes = chat.mensajes.length > 0
   const ultimoMensaje = tieneMensajes ? chat.mensajes[chat.mensajes.length - 1] : null
+  
+  const contenidoUltimoMensaje = ultimoMensaje 
+    ? (typeof ultimoMensaje.content === "string" 
+        ? ultimoMensaje.content 
+        : Array.isArray(ultimoMensaje.content)
+        ? ultimoMensaje.content.map(item => item.type === "text" ? item.text : "").join("")
+        : "")
+    : ""
 
-  // Establecer conversación actual si hay ID en la URL
   useEffect(() => {
     if (params?.id && typeof params.id === "string" && usuario) {
       establecerConversacionActual(params.id)
     } else if (!params?.id && usuario) {
-      // Si no hay ID en la URL, limpiar conversación actual
       establecerConversacionActual(null)
     }
   }, [params?.id, usuario, establecerConversacionActual])
 
+  useEffect(() => {
+    const contenedor = refContenedorScroll.current
+    if (!contenedor) return
+
+    const verificarPosicionScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = contenedor
+      const estaAlFinal = scrollHeight - scrollTop - clientHeight < 100
+      establecerMostrarBotonScroll(!estaAlFinal)
+      establecerAutoScrollHabilitado(estaAlFinal)
+    }
+
+    contenedor.addEventListener("scroll", verificarPosicionScroll)
+    verificarPosicionScroll()
+
+    return () => {
+      contenedor.removeEventListener("scroll", verificarPosicionScroll)
+    }
+  }, [chat.mensajes.length, chatLocal.estaCargando])
+
   useUsarDesplazamientoAutomatico(
+    refContenedorScroll,
     tieneMensajes,
     chat.mensajes.length,
     chatLocal.estaCargando,
-    typeof ultimoMensaje?.content === "string" ? ultimoMensaje.content : ""
+    contenidoUltimoMensaje,
+    autoScrollHabilitado
   )
+
+  const scrollAlFinal = () => {
+    if (refContenedorScroll.current) {
+      const contenedor = refContenedorScroll.current
+      const destino = contenedor.scrollHeight
+      const inicio = contenedor.scrollTop
+      const distancia = destino - inicio
+      const duracion = Math.min(800, Math.max(300, distancia * 0.5))
+      const inicioTiempo = performance.now()
+
+      const animarScroll = (tiempoActual: number) => {
+        const tiempoTranscurrido = tiempoActual - inicioTiempo
+        const progreso = Math.min(tiempoTranscurrido / duracion, 1)
+        
+        const facilidad = 1 - Math.pow(1 - progreso, 3)
+        
+        contenedor.scrollTop = inicio + (distancia * facilidad)
+
+        if (progreso < 1) {
+          requestAnimationFrame(animarScroll)
+        } else {
+          establecerAutoScrollHabilitado(true)
+        }
+      }
+
+      requestAnimationFrame(animarScroll)
+    }
+  }
 
   const manejarEnvio: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
     
     if (usuario) {
       try {
-        // Guardar entrada antes de limpiarla
         const entradaTexto = chatLocal.entrada
         const imagenActual = chatLocal.imagenSeleccionada
         
-        // Limpiar entrada inmediatamente
         chatLocal.establecerEntrada("")
         chatLocal.establecerImagenSeleccionada(null)
         chatLocal.establecerEstaCargando(true)
 
-        // Si no hay conversación activa, crear una nueva
         let idConversacion = conversacionActual
         if (!idConversacion) {
-          // Obtener el texto del mensaje para el título
           const textoMensaje = entradaTexto.trim().slice(0, 50) || "Nueva conversación"
           
           idConversacion = await crearNuevaConversacion()
           establecerConversacionActual(idConversacion)
           
-          // Actualizar el título con el primer mensaje
           if (textoMensaje !== "Nueva conversación") {
             const { actualizarTituloConversacion } = await import("@/CapaDatos/repositorios/conversaciones")
             await actualizarTituloConversacion(idConversacion, textoMensaje)
           }
           
-          // Navegar a la nueva conversación
           window.history.pushState({}, "", `/chat/${idConversacion}`)
         }
 
-        // Crear mensaje del usuario
         const contenidoMensaje: Array<{ type: "text"; text: string } | { type: "image"; image: string }> = []
         
         if (entradaTexto.trim()) {
@@ -96,14 +147,11 @@ export default function PaginaChat() {
           timestamp: new Date()
         }
         
-        // Guardar mensaje del usuario en BD
         const { guardarMensaje } = await import("@/CapaDatos/repositorios/mensajes")
         await guardarMensaje(idConversacion, "user", mensajeUsuario.content)
         
-        // Agregar a la UI
         chatPersistente.establecerMensajes(prev => [...prev, mensajeUsuario])
 
-        // Enviar a la API
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -118,9 +166,19 @@ export default function PaginaChat() {
           throw new Error("La respuesta no contiene un cuerpo válido para streaming")
         }
 
+        const idMensajeAsistente = (Date.now() + 1).toString()
+        const mensajeAsistenteInicial: import("@/CapaDatos/tipos/mensaje").Mensaje = {
+          id: idMensajeAsistente,
+          role: "assistant",
+          content: "",
+          timestamp: new Date()
+        }
+        
+        chatPersistente.establecerMensajes(prev => [...prev, mensajeAsistenteInicial])
+
         const reader = response.body.getReader()
         const decoder = new TextDecoder()
-        let respuestaCompleta = ""
+        let respuestaAcumulada = ""
 
         try {
           while (true) {
@@ -129,45 +187,43 @@ export default function PaginaChat() {
             
             if (value) {
               const chunk = decoder.decode(value, { stream: true })
-              respuestaCompleta += chunk
+              respuestaAcumulada += chunk
+              
+              chatPersistente.establecerMensajes(prev => prev.map(msg => 
+                msg.id === idMensajeAsistente 
+                  ? { ...msg, content: respuestaAcumulada }
+                  : msg
+              ))
             }
           }
           
           const chunkFinal = decoder.decode()
           if (chunkFinal) {
-            respuestaCompleta += chunkFinal
+            respuestaAcumulada += chunkFinal
+            chatPersistente.establecerMensajes(prev => prev.map(msg => 
+              msg.id === idMensajeAsistente 
+                ? { ...msg, content: respuestaAcumulada }
+                : msg
+            ))
           }
         } finally {
           reader.releaseLock()
         }
-
-        // Crear mensaje del asistente
-        const mensajeAsistente: import("@/CapaDatos/tipos/mensaje").Mensaje = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: respuestaCompleta,
-          timestamp: new Date()
-        }
         
-        // Guardar mensaje del asistente en BD
-        await guardarMensaje(idConversacion, "assistant", mensajeAsistente.content)
-        
-        // Agregar a la UI
-        chatPersistente.establecerMensajes(prev => [...prev, mensajeAsistente])
+        await guardarMensaje(idConversacion, "assistant", respuestaAcumulada)
       } catch (error) {
         console.error("Error:", error)
       } finally {
         chatLocal.establecerEstaCargando(false)
       }
     } else {
-      // Modo sin autenticación - usar chat local
       chatLocal.enviar()
     }
   }
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
+      <div ref={refContenedorScroll} className="flex-1 overflow-y-auto">
         <div
           ref={refContenedorChat}
           className="mx-auto w-full max-w-4xl px-3 md:px-4 py-4 md:py-6 pb-6"
@@ -180,7 +236,16 @@ export default function PaginaChat() {
         </div>
       </div>
 
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 relative">
+        {mostrarBotonScroll && (
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 -top-12 z-10 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-300"
+          >
+            <div className="pointer-events-auto">
+              <BotonScrollAbajo onClick={scrollAlFinal} />
+            </div>
+          </div>
+        )}
         <CompositorChat
           value={chatLocal.entrada}
           onChange={chatLocal.establecerEntrada}

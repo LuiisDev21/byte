@@ -8,7 +8,7 @@
 import { ContenidoMensaje } from "@/CapaPresentacion/componentes/contenido-mensaje"
 import { IndicadorEscritura } from "@/CapaPresentacion/componentes/indicador-escritura"
 import { Mensaje } from "@/CapaDatos/tipos/mensaje"
-import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
+import Image from "next/image"
 
 interface PropiedadesMensajeChat {
   message: Mensaje
@@ -40,10 +40,16 @@ export function MensajeChat({ message, isLastMessage, isLoading }: PropiedadesMe
   )
 }
 
-function AvatarAsistente() {
+export function AvatarAsistente() {
   return (
-    <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-      <ByteIcon className="size-4" />
+    <div className="relative size-8 shrink-0 rounded-full overflow-hidden">
+      <Image
+        src="/bytti.png"
+        alt="Byte Chat Asistente"
+        fill
+        className="object-cover"
+        sizes="32px"
+      />
     </div>
   )
 }
