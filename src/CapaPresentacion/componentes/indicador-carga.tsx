@@ -5,13 +5,13 @@
  * - Accesibilidad: aria-live="polite" y aria-atomic para screen readers.
  */
 import { IndicadorEscritura } from "@/CapaPresentacion/componentes/indicador-escritura"
-import { PawPrint } from "lucide-react"
+import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 
 export function IndicadorCarga() {
   return (
     <div className="flex items-center gap-2 justify-start" aria-live="polite" aria-atomic>
       <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-        <PawPrint className="size-4" />
+        <ByteIcon className="size-4" />
       </div>
       <IndicadorEscritura />
     </div>

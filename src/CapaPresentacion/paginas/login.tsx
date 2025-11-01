@@ -7,7 +7,7 @@ import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 import { Input } from "@/CapaPresentacion/componentes/ui/input"
 import { Label } from "@/CapaPresentacion/componentes/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/CapaPresentacion/componentes/ui/card"
-import { PawPrint } from "lucide-react"
+import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 
 export default function PaginaLogin() {
   const router = useRouter()
@@ -44,7 +44,7 @@ export default function PaginaLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <PawPrint className="size-12 text-primary" />
+            <ByteIcon className="size-12 text-primary" />
           </div>
           <CardTitle className="text-2xl">
             {esRegistro ? "Crear cuenta" : "Iniciar sesión"}

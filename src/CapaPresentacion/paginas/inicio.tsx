@@ -6,7 +6,6 @@ import Image from "next/image"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 import { motion, useInView } from "framer-motion"
 import { 
-  PawPrint, 
   Camera, 
   Heart, 
   Sparkles, 
@@ -15,6 +14,7 @@ import {
   Instagram,
   MessageCircle
 } from "lucide-react"
+import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 
 const caracteristicas = [
   {
@@ -143,7 +143,7 @@ export default function PaginaInicio() {
             transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-2"
           >
-            <PawPrint className="size-6 text-primary" />
+            <ByteIcon className="size-6 text-primary" />
             <span className="text-xl font-bold text-foreground">Byte Chat</span>
           </motion.div>
           <motion.div
@@ -404,7 +404,7 @@ export default function PaginaInicio() {
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <PawPrint className="size-6 text-white" />
+                <ByteIcon className="size-6 text-white" />
                 <span className="text-xl font-bold text-white">Byte Chat</span>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">

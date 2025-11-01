@@ -1,4 +1,4 @@
-import { PawPrint } from "lucide-react"
+import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 import { motion } from "framer-motion"
 
 export function EstadoVacio() {
@@ -11,7 +11,7 @@ export function EstadoVacio() {
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
     >
       <div className="text-center text-muted-foreground">
-        <PawPrint aria-hidden className="mx-auto mb-4 size-20 md:size-24 text-foreground/50" />
+        <ByteIcon ariaHidden className="mx-auto mb-4 size-20 md:size-24 text-foreground/50" />
         <h1 id="empty-title" className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground">
           ¡Bienvenido a Byte Chat!
         </h1>

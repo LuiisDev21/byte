@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MessageSquareText, PawPrint, PanelLeft, LogIn, LogOut, Trash2 } from "lucide-react"
+import { MessageSquareText, PanelLeft, LogIn, LogOut, Trash2 } from "lucide-react"
+import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 import { Separator } from "@/CapaPresentacion/componentes/ui/separador"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 import { ScrollArea } from "@/CapaPresentacion/componentes/ui/area-desplazamiento"
@@ -79,7 +80,7 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
             {estaHover ? (
               <PanelLeft className="size-6 text-primary" />
             ) : (
-              <PawPrint className="size-6 text-primary" />
+              <ByteIcon className="size-6 text-primary" />
             )}
           </div>
         </div>
@@ -101,7 +102,7 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
         {!isMobile && (
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <PawPrint className="size-5 text-primary" />
+              <ByteIcon className="size-5 text-primary" />
               <span className="font-semibold">Byte Chat</span>
             </div>
             <Button

@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useRef } from "react"
-import { X, PawPrint } from "lucide-react"
+import { X } from "lucide-react"
+import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 import { SidebarApp } from "@/CapaPresentacion/componentes/sidebar-app"
 import { Button } from "@/CapaPresentacion/componentes/ui/boton"
 
@@ -51,7 +52,7 @@ export function SidebarMovil({ open, onClose }: Props) {
       >
         <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center gap-2">
-            <PawPrint className="size-4 text-primary" />
+            <ByteIcon className="size-4 text-primary" />
             <span className="text-sm font-medium">Byte Chat</span>
           </div>
           <Button size="icon" variant="ghost" aria-label="Cerrar menú" onClick={onClose}>
