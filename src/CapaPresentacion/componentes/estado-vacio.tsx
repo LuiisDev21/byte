@@ -1,11 +1,16 @@
 import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
+import { PreguntasRapidas } from "@/CapaPresentacion/componentes/preguntas-rapidas"
 import { motion } from "framer-motion"
 
-export function EstadoVacio() {
+type Props = {
+  onPreguntaClick?: (pregunta: string) => void
+}
+
+export function EstadoVacio({ onPreguntaClick }: Props) {
   return (
     <motion.section
       aria-labelledby="empty-title"
-      className="flex items-center justify-center min-h-[60vh] w-full max-w-2xl mx-auto px-4"
+      className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-2xl mx-auto px-4"
       initial={false}
       animate={{ x: 0 }}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
@@ -19,6 +24,9 @@ export function EstadoVacio() {
           Tu asistente AI sobre perros
         </p>
       </div>
+      {onPreguntaClick && (
+        <PreguntasRapidas onPreguntaClick={onPreguntaClick} />
+      )}
     </motion.section>
   )
 }

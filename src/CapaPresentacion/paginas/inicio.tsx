@@ -152,7 +152,7 @@ export default function PaginaInicio() {
             transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <Button asChild size="lg" className="bg-[#7A4F2F] hover:bg-[#7A4F2F]/90 text-white">
-              <Link href="/chat">Probar gratis</Link>
+              <Link href="/login">Iniciar sesión</Link>
             </Button>
           </motion.div>
         </div>

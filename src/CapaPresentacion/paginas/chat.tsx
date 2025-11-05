@@ -100,6 +100,16 @@ export default function PaginaChat() {
     }
   }
 
+  const manejarPreguntaRapida = (pregunta: string) => {
+    chatLocal.establecerEntrada(pregunta)
+    setTimeout(() => {
+      const form = document.querySelector('form')
+      if (form) {
+        form.requestSubmit()
+      }
+    }, 100)
+  }
+
   const manejarEnvio: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
 
@@ -262,7 +272,7 @@ export default function PaginaChat() {
           {tieneMensajes ? (
             <MensajesChat messages={chat.mensajes} isLoading={chatLocal.estaCargando} />
           ) : (
-            <EstadoVacio />
+            <EstadoVacio onPreguntaClick={manejarPreguntaRapida} />
           )}
         </div>
       </div>
