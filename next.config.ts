@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Habilitar modo standalone para Docker
+  output: 'standalone',
+  
+  // Configuración de imágenes (si usas next/image)
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+    qualities: [80, 85, 90],
+  },
 };
 
 export default nextConfig;
