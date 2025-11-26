@@ -595,14 +595,5 @@ pnpm run lint
 
 ---
 
-## 📝 Conclusión
-
-Byte Chat es una aplicación web moderna que implementa una arquitectura de tres capas bien definida, con separación clara de responsabilidades entre presentación, negocio y datos. El sistema permite tanto uso anónimo como autenticado, ofreciendo persistencia de conversaciones para usuarios registrados mientras mantiene la funcionalidad completa para usuarios sin cuenta.
-
-La integración con Google AI (Gemini) proporciona respuestas inteligentes y soporte para imágenes, mientras que Supabase maneja la autenticación y persistencia de datos de manera segura con Row Level Security.
-
----
-
-**Fecha de Documentación**: Enero 2025  
+**Fecha de Documentación**: Octubre 2025  
 **Versión**: 1.0.0  
-**Autor**: Byte Chat Team
