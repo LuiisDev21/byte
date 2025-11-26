@@ -1,16 +1,4 @@
 # Documentación del Proyecto: Byte Chat
-
-## Tabla de Contenidos
-1. [Identificación de Usuarios y Roles](#identificación-de-usuarios-y-roles)
-2. [Diagrama de Casos de Uso](#diagrama-de-casos-de-uso)
-3. [Modelo de Procesos](#modelo-de-procesos)
-4. [Arquitectura de Tres Capas](#arquitectura-de-tres-capas)
-5. [Diagrama de Componentes](#diagrama-de-componentes)
-6. [Modelo de Datos](#modelo-de-datos)
-7. [Prototipo de Interfaz](#prototipo-de-interfaz)
-
----
-
 ## 1. Identificación de Usuarios y Roles
 
 ### Usuarios del Sistema
