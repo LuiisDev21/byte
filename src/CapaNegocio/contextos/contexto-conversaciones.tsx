@@ -2,11 +2,11 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { useAutenticacion } from "./contexto-autenticacion"
-import { 
-  crearConversacion, 
-  obtenerConversaciones, 
+import {
+  crearConversacion,
+  obtenerConversaciones,
   eliminarConversacion,
-  actualizarTituloConversacion 
+  actualizarTituloConversacion
 } from "@/CapaDatos/repositorios/conversaciones"
 
 interface Conversacion {
@@ -55,25 +55,22 @@ export function ProveedorConversaciones({ children }: { children: React.ReactNod
 
   useEffect(() => {
     recargarConversaciones()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario])
 
   const crearNuevaConversacion = async () => {
     if (!usuario) {
       throw new Error("Usuario no autenticado")
     }
-    
+
     try {
-      // Asegurar que el usuario existe en la tabla usuarios
       const { crearUsuarioSiNoExiste } = await import("@/CapaDatos/repositorios/usuarios")
       await crearUsuarioSiNoExiste(usuario.id, usuario.email || '')
-      
+
       const nueva = await crearConversacion(usuario.id)
-      
-      // Recargar conversaciones para asegurar que esté sincronizado
+
       await recargarConversaciones()
       establecerConversacionActual(nueva.id)
-      
+
       return nueva.id
     } catch (error) {
       console.error('Error al crear conversación:', error)
@@ -91,7 +88,7 @@ export function ProveedorConversaciones({ children }: { children: React.ReactNod
 
   const actualizarTitulo = async (id: string, titulo: string) => {
     await actualizarTituloConversacion(id, titulo)
-    establecerConversaciones(prev => 
+    establecerConversaciones(prev =>
       prev.map(c => c.id === id ? { ...c, titulo, updated_at: new Date().toISOString() } : c)
     )
   }

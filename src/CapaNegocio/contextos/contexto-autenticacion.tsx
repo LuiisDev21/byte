@@ -19,13 +19,11 @@ export function ProveedorAutenticacion({ children }: { children: React.ReactNode
   const [cargando, establecerCargando] = useState(true)
 
   useEffect(() => {
-    // Obtener sesión actual
     supabase.auth.getSession().then(({ data: { session } }) => {
       establecerUsuario(session?.user ?? null)
       establecerCargando(false)
     })
 
-    // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       establecerUsuario(session?.user ?? null)
     })
@@ -36,15 +34,13 @@ export function ProveedorAutenticacion({ children }: { children: React.ReactNode
   const iniciarSesion = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    
-    // Asegurar que el usuario existe en la tabla usuarios
+
     if (data.user) {
       try {
         const { crearUsuarioSiNoExiste } = await import("@/CapaDatos/repositorios/usuarios")
         await crearUsuarioSiNoExiste(data.user.id, email)
       } catch (err) {
         console.error('Error verificando usuario en tabla:', err)
-        // No lanzar error aquí, continuar con el login
       }
     }
   }
@@ -52,7 +48,6 @@ export function ProveedorAutenticacion({ children }: { children: React.ReactNode
   const registrarse = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
-    // El trigger de Supabase creará automáticamente el usuario en la tabla usuarios
   }
 
   const cerrarSesion = async () => {
