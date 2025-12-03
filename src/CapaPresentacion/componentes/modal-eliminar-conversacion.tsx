@@ -1,5 +1,10 @@
 /**
  * Componente de modal para confirmar la eliminación de una conversación.
+ * - Renderizado con portal para evitar problemas de z-index.
+ * - Bloquea scroll del body cuando está abierto.
+ * - Maneja tecla Escape para cerrar.
+ * - Diseño con Card, icono de alerta y botones de acción.
+ * - Accesibilidad: overlay clickeable para cancelar, botón X visible.
  */
 "use client"
 

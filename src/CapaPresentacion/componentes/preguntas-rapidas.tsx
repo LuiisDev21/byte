@@ -1,3 +1,10 @@
+/**
+ * Componente de preguntas rápidas sugeridas para iniciar conversaciones.
+ * - Selecciona aleatoriamente 6 preguntas de un conjunto predefinido.
+ * - Animaciones con framer-motion: fade-in y scale en hover/tap.
+ * - Diseño responsive con badges clickeables que disparan onPreguntaClick.
+ * - Categorías: comportamiento, entrenamiento, salud, nutrición, cuidados, razas, problemas, etapas de vida.
+ */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,7 +13,6 @@ import { motion } from "framer-motion"
 
 
 const PREGUNTAS_DISPONIBLES = [
-    // --- Comportamiento Básico ---
     "¿Por qué mi perro come pasto?",
     "¿Por qué mi perro escarba en el jardín?",
     "¿Qué significa cuando mi perro mueve la cola?",
@@ -17,8 +23,6 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Qué significa cuando mi perro me lame?",
     "¿Por qué mi perro tiembla?",
     "¿Por qué los perros se huelen la cola?",
-
-    // --- Entrenamiento y Socialización ---
     "¿Cómo entrenar a un cachorro?",
     "¿Cómo enseñar a mi perro a sentarse?",
     "¿Cómo enseñar a mi perro a venir cuando lo llamo?",
@@ -34,8 +38,6 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Qué es el entrenamiento con clicker?",
     "¿Cómo corregir a mi perro cuando hace algo mal?",
     "¿A qué edad debo empezar a entrenar a mi cachorro?",
-
-    // --- Salud y Prevención ---
     "¿Cómo saber si mi perro está enfermo?",
     "¿Qué vacunas necesita un cachorro?",
     "¿Cada cuánto debo desparasitar a mi perro?",
@@ -51,8 +53,6 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Es peligrosa la tos de las perreras?",
     "¿Cómo prevenir la torsión gástrica en perros?",
     "¿Qué hacer en caso de envenenamiento?",
-
-    // --- Nutrición y Alimentación ---
     "¿Cuál es la mejor comida para perros?",
     "¿Qué hacer si mi perro no come?",
     "¿Que puedo y que no puedo darle a mi perro de comer?",
@@ -63,8 +63,6 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Qué es la dieta BARF para perros?",
     "¿Cómo hacer la transición a una nueva comida para perros?",
     "¿Mi perro puede comer huesos cocidos?",
-
-    // --- Cuidados e Higiene ---
     "¿Cada cuánto debo bañar a mi perro?",
     "¿Cómo cuidar los dientes de mi perro?",
     "¿Cómo cortar las uñas de mi perro?",
@@ -75,8 +73,6 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Cómo cuidar las almohadillas de mi perro?",
     "¿Mi perro necesita ropa en invierno?",
     "¿Qué hacer si mi perro huele mal?",
-
-    // --- Elección de Raza y Estilo de Vida ---
     "¿Qué raza de perro es mejor para apartamentos?",
     "¿Qué razas son buenas con niños?",
     "¿Cuáles son las razas más inteligentes?",
@@ -87,8 +83,6 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Cuáles son las razas de perros más grandes del mundo?",
     "¿Cuáles son las razas de perros más pequeñas?",
     "¿Qué debo considerar antes de adoptar un perro?",
-
-    // --- Problemas de Comportamiento ---
     "¿Qué hacer si mi perro tiene ansiedad por separación?",
     "¿Por qué mi perro es agresivo con otros perros?",
     "¿Cómo manejar a un perro miedoso?",
@@ -98,16 +92,12 @@ const PREGUNTAS_DISPONIBLES = [
     "¿Cómo calmar a un perro durante una tormenta o fuegos artificiales?",
     "¿Mi perro está deprimido? ¿Cuáles son las señales?",
     "¿Cómo detener la destructividad en casa?",
-
-    // --- Etapas de la Vida ---
     "¿Qué necesito preparar para la llegada de un nuevo cachorro?",
     "¿Cómo cuidar a un perro anciano (senior)?",
     "¿Cuánto tiempo dura el embarazo de una perra?",
     "¿Cuáles son los cuidados de una perra recién parida?",
     "¿A qué edad se considera anciano a un perro?",
     "¿Cómo ayudar a mi perro con la artritis?",
-
-    // --- Misceláneos y Curiosidades ---
     "¿Cuánto ejercicio necesita un perro al día?",
     "¿Cómo viajar con mi perro en avión?",
     "¿Cómo viajar con mi perro en coche?",

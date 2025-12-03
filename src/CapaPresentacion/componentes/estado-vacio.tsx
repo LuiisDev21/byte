@@ -1,3 +1,10 @@
+/**
+ * Componente de estado vacío mostrado cuando no hay mensajes en el chat.
+ * - Muestra mensaje de bienvenida con logo Byte y descripción.
+ * - Opcionalmente renderiza PreguntasRapidas si se proporciona onPreguntaClick.
+ * - Animaciones con framer-motion para entrada suave.
+ * - Accesibilidad: aria-labelledby para título semántico.
+ */
 import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 import { PreguntasRapidas } from "@/CapaPresentacion/componentes/preguntas-rapidas"
 import { motion } from "framer-motion"

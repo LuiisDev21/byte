@@ -1,5 +1,9 @@
 /**
- * Componente para renderizar el contenido de un mensaje (texto, imagen o multimodal)
+ * Componente para renderizar el contenido de un mensaje (texto, imagen o multimodal).
+ * - Soporta contenido simple (string) y multimodal (array de partes).
+ * - Renderiza texto con markdown para mensajes del asistente, texto plano para usuario.
+ * - Soporta imágenes con optimización Next.js Image y diseño responsivo.
+ * - Maneja animación de escritura cuando isTyping=true.
  */
 "use client"
 import Image from "next/image"

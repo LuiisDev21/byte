@@ -1,3 +1,12 @@
+/**
+ * Componente de sidebar móvil con animación de deslizamiento lateral.
+ * - Overlay oscuro con backdrop clickeable para cerrar.
+ * - Animación slide-in desde la izquierda con transición suave.
+ * - Bloquea scroll del body cuando está abierto.
+ * - Maneja tecla Escape para cerrar y focus trap.
+ * - Reutiliza SidebarApp para contenido interno.
+ * - Accesibilidad: aria-modal, aria-label, focus management.
+ */
 "use client"
 import { useEffect, useRef } from "react"
 import { X } from "lucide-react"

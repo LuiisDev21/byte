@@ -1,3 +1,12 @@
+/**
+ * Componente de sidebar principal de la aplicación con gestión de conversaciones.
+ * - Muestra lista de conversaciones con scroll, estado colapsado/expandido.
+ * - Funcionalidades: crear nueva conversación, eliminar conversaciones, navegación.
+ * - Integra autenticación: muestra opciones de login/logout según estado usuario.
+ * - Modal de confirmación para eliminar conversaciones.
+ * - Diseño responsivo: colapsado muestra solo iconos, expandido muestra títulos.
+ * - Accesibilidad: aria-labels, navegación por teclado, estados visuales claros.
+ */
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MessageSquareText, PanelLeft, LogIn, LogOut, Trash2 } from "lucide-react"

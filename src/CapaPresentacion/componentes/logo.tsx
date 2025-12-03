@@ -1,3 +1,8 @@
+/**
+ * Componente de logo de la aplicación Byte Chat.
+ * - Soporta clases personalizadas para estilizado flexible.
+ * - Usado en headers, sidebars y otras áreas de branding.
+ */
 import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 
 export function Logo({ className = "" }: { className?: string }) {

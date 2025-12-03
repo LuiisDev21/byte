@@ -1,3 +1,10 @@
+/**
+ * Contexto React para compartir estado del layout UI entre componentes.
+ * - Proporciona información sobre estado del sidebar (abierto/cerrado) y tipo de dispositivo (escritorio/móvil).
+ * - ProveedorLayoutUI: wrapper para inyectar valores del contexto.
+ * - useUsarLayoutUI: hook para consumir el contexto en componentes hijos.
+ * - Útil para sincronizar estado entre ShellLayout y componentes que necesitan saber el estado del sidebar.
+ */
 "use client"
 import { createContext, useContext } from "react"
 
