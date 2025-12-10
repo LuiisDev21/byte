@@ -12,7 +12,8 @@ import {
   Check, 
   Facebook, 
   Instagram,
-  MessageCircle
+  MessageCircle,
+  Github
 } from "lucide-react"
 import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 
@@ -150,7 +151,13 @@ export default function PaginaInicio() {
             initial={{ x: 20, opacity: 0 }}
             animate={estaMontado ? { x: 0, opacity: 1 } : { x: 20, opacity: 0 }}
             transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-3"
           >
+            <Button asChild size="icon" variant="outline" className="border-[#7A4F2F] hover:bg-[#7A4F2F]/10 hover:border-[#7A4F2F]">
+              <a href="https://github.com/Luiisdev21/byte" target="_blank" rel="noopener noreferrer" aria-label="Repositorio de GitHub">
+                <Github className="size-5 text-[#7A4F2F]" />
+              </a>
+            </Button>
             <Button asChild size="lg" className="bg-[#7A4F2F] hover:bg-[#7A4F2F]/90 text-white">
               <Link href="/login">Iniciar sesión</Link>
             </Button>

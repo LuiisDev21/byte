@@ -1,10 +1,10 @@
 # Configuración de Supabase
 
-## ⚠️ IMPORTANTE: Debes ejecutar este SQL en Supabase antes de usar la aplicación
+``IMPORTANTE: Debes ejecutar este SQL en Supabase antes de usar la aplicación``
 
 ### Paso 1: Ve a tu proyecto en Supabase
 1. Abre https://supabase.com
-2. Selecciona tu proyecto: `pstltxkwcxathamiavtk`
+2. Selecciona tu proyecto: `XXXXXXXXXXXXXX`
 
 ### Paso 2: Abre el SQL Editor
 1. En el menú lateral, haz clic en "SQL Editor"
@@ -116,7 +116,7 @@ ON CONFLICT (id) DO NOTHING;
 2. Asegúrate de que "Email" esté habilitado
 3. Configura las opciones según tus necesidades
 
-## ✅ Verificación
+## Verificación
 
 Después de ejecutar el SQL, deberías ver:
 - 3 tablas creadas: `usuarios`, `conversaciones`, `mensajes`
@@ -134,7 +134,7 @@ SELECT id, email FROM auth.users
 ON CONFLICT (id) DO NOTHING;
 ```
 
-## 🔧 Solución de Problemas
+## Solución de Problemas
 
 ### Error: "relation does not exist"
 - Asegúrate de haber ejecutado TODO el SQL anterior
