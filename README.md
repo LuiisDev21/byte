@@ -4,10 +4,13 @@
 
 <br>
 
+![Next](https://ziadoua.github.io/m3-Markdown-Badges/badges/NextJS/nextjs1.svg)
+![Supabase](https://ziadoua.github.io/m3-Markdown-Badges/badges/Supabase/supabase1.svg)
+[![License: MIT](https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceMIT/licencemit1.svg)](LICENSE)
+![Stars](https://m3-markdown-badges.vercel.app/stars/3/2/Luiisdev21/byte)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LuiisDev21/byte)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-active-brightgreen.svg)]()
 # Byte Chat - Asistente AI Experto en perros
+
 
 ###
 
