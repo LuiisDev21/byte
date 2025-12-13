@@ -125,6 +125,7 @@ export default function LayoutRaiz({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <Analytics/>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh`}> 
         <ProveedorAutenticacion>
