@@ -12,7 +12,7 @@
 ###
 
 
-Byte chat es una aplicacion web de chat con IA construida con **Next.js (App Router)**, que permite conversar con un asistente (Google Gemini vía AI SDK) entrenado para asistir exclusivamente temas relacionados a perros y cuidado canino,
+Byte chat es una aplicacion web de chat con IA construida con **Next.js (App Router)**, que permite conversar con un asistente (Google Gemini vía AI SDK) entrenado para asistir exclusivamente temas relacionados a perros y cuidado canino.
 
 Este repositorio está organizado con una arquitectura en capas (Presentación / Negocio / Datos) para mantener separadas la UI, la lógica de aplicación y el acceso a servicios externos.
 
