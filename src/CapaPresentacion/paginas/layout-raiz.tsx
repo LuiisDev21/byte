@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { ShellLayout } from "@/CapaPresentacion/componentes/shell-layout"
 import { ProveedorAutenticacion } from "@/CapaNegocio/contextos/contexto-autenticacion"
 import { ProveedorConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
