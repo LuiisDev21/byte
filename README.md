@@ -1,32 +1,177 @@
-# Documentación del Proyecto: Byte Chat
-## 1. Identificación de Usuarios y Roles
+<div align="center">
+  <img height="200" src="https://kowinature.es/img/cms/perrito.jpg"  />
+</div>
 
-### Usuarios del Sistema
+<br>
 
-#### Usuario Anónimo
-- **Descripción**: Usuario que accede al sistema sin autenticación
-- **Permisos**:
-  - ✅ Acceder a la página principal
-  - ✅ Usar el chat sin guardar historial
-  - ✅ Enviar mensajes de texto
-  - ✅ Enviar imágenes
-  - ❌ Guardar conversaciones
-  - ❌ Ver historial de conversaciones
-- **Limitaciones**: Las conversaciones se pierden al cerrar el navegador
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LuiisDev21/byte)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-active-brightgreen.svg)]()
+# Byte Chat - Asistente AI Experto en perros
 
-####  Usuario Registrado
-- **Descripción**: Usuario autenticado con cuenta en el sistema
-- **Permisos**:
-  - ✅ Todos los permisos del usuario anónimo
-  - ✅ Crear y guardar conversaciones
-  - ✅ Ver historial de conversaciones
-  - ✅ Eliminar conversaciones
-  - ✅ Acceder a conversaciones desde cualquier dispositivo
-- **Datos almacenados**: Email, ID único, fecha de registro
+###
 
----
 
-## 2. Diagrama de Casos de Uso
+Byte chat es una aplicacion web de chat con IA construida con **Next.js (App Router)**, que permite conversar con un asistente (Google Gemini vía AI SDK) entrenado para asistir exclusivamente temas relacionados a perros y cuidado canino,
+
+Este repositorio está organizado con una arquitectura en capas (Presentación / Negocio / Datos) para mantener separadas la UI, la lógica de aplicación y el acceso a servicios externos.
+
+## Características
+
+- Chat con respuestas generadas por IA.
+- Soporte para mensajes con **texto e imágenes**.
+- Modo anónimo: permite usar el chat sin guardar historial.
+- Modo autenticado: creación, visualización y eliminación de conversaciones persistidas.
+- Persistencia con Supabase (tablas `usuarios`, `conversaciones` y `mensajes`) y RLS.
+
+## Tecnologías
+
+### Frontend
+
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Radix UI (ScrollArea, Separator, Slot)
+
+### Backend (API)
+
+- Rutas de API de Next.js (`src/app/api/...`)
+- AI SDK + proveedor de Google (`ai`, `@ai-sdk/google`)
+
+### Datos y autenticación
+
+- Supabase (`@supabase/supabase-js`)
+- PostgreSQL (gestionado por Supabase)
+- Row Level Security (RLS)
+
+## Requisitos
+
+- Node.js (recomendado: 18+)
+- pnpm
+- Proyecto de Supabase (URL + anon key)
+- API key de Google Generative AI
+
+## Estructura del proyecto
+
+La aplicación usa el App Router de Next en `src/app` y además organiza el código por capas:
+
+```
+src/
+  app/                         # Rutas Next.js (UI + API)
+    api/chat/route.ts          # Endpoint de chat
+    chat/                      # Rutas de UI para el chat
+    login/                     # Ruta de login
+  CapaPresentacion/            # Componentes y páginas (UI)
+  CapaNegocio/                 # Hooks, contextos, utilidades
+  CapaDatos/                   # Repositorios, configuración, supabase, tipos
+```
+
+### Arquitectura por capas (resumen)
+
+- **CapaPresentacion**: componentes y composición visual.
+- **CapaNegocio**: estado, hooks y reglas de interacción (ej. chat persistente vs local).
+- **CapaDatos**: repositorios, cliente Supabase, tipos y configuración de IA.
+
+## Roles y permisos
+
+### Usuario anónimo
+
+- Puede chatear desde la UI.
+- Puede enviar texto e imágenes.
+- No guarda conversaciones; el historial se pierde al cerrar el navegador.
+
+### Usuario registrado
+
+- Todo lo anterior.
+- Puede guardar conversaciones y ver historial.
+- Puede eliminar conversaciones.
+- Puede continuar conversaciones desde distintos dispositivos (según sesión de Supabase).
+
+## Configuración
+
+### 1) Instalar dependencias
+
+Este proyecto usa **pnpm**.
+
+```powershell
+pnpm install
+```
+
+### 2) Variables de entorno
+
+Crea un archivo `.env.local` en la raíz con:
+
+```env
+GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key
+NEXT_PUBLIC_SUPABASE_URL=tu_url_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+```
+
+Notas:
+
+- `NEXT_PUBLIC_*` se expone al cliente. No pongas secretos ahí.
+- La clave de Google se usa en el servidor (rutas API). Mantén el archivo `.env.local` fuera de control de versiones.
+
+### 3) Configurar Supabase (SQL + RLS)
+
+Antes de usar el modo autenticado (persistencia), debes crear las tablas y políticas.
+
+Consulta la guía: `SETUP_SUPABASE.md`.
+
+Checklist típico:
+
+- Ejecutar el SQL que crea tablas `usuarios`, `conversaciones`, `mensajes`.
+- Activar RLS y políticas.
+- Verificar el trigger que sincroniza `auth.users` → `public.usuarios`.
+- Confirmar que el proveedor de autenticación por email esté habilitado en Supabase.
+
+## Desarrollo
+
+Ejecuta el servidor de desarrollo:
+
+```powershell
+pnpm dev
+```
+
+Luego abre la URL que indique la consola (por defecto suele ser `http://localhost:3000`).
+
+## Scripts disponibles
+
+Los scripts vienen definidos en `package.json`:
+
+- `pnpm dev`: desarrollo con Turbopack.
+- `pnpm build`: build de producción.
+- `pnpm start`: iniciar en modo producción.
+- `pnpm lint`: lint con ESLint.
+
+## Despliegue
+
+El proyecto está configurado con `output: 'standalone'` en `next.config.ts`, lo que facilita el despliegue (por ejemplo en Docker o plataformas que soporten modo standalone).
+
+Flujo recomendado:
+
+```powershell
+pnpm build
+pnpm start
+```
+
+## Modelo de datos (Supabase)
+
+Las tablas principales (ver `SETUP_SUPABASE.md`) son:
+
+- `usuarios`: perfil mínimo asociado a `auth.users`.
+- `conversaciones`: conversaciones por usuario.
+- `mensajes`: mensajes por conversación (rol y contenido JSONB).
+
+El campo `contenido` soporta texto o estructuras con imagen (por ejemplo, contenido multimodal).
+
+
+
+## Apéndice: documentación técnica previa
+
+El README anterior contenía diagramas extensos (casos de uso, modelo de procesos, ERD y componentes). Si quieres recuperar esa documentación como un documento aparte (por ejemplo `docs/arquitectura.md`) para mantener el README más enfocado en uso/instalación, puedo migrarla y dejar enlaces desde aquí.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -294,27 +439,27 @@ byte-chat/
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    CAPA DE PRESENTACIÓN                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   Páginas    │  │ Componentes  │  │   Layouts    │     │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │   Páginas    │  │ Componentes  │  │   Layouts    │       │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
 │         │                  │                  │             │
 └─────────┼──────────────────┼──────────────────┼─────────────┘
           │                  │                  │
           ▼                  ▼                  ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                     CAPA DE NEGOCIO                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   Hooks      │  │  Contextos   │  │  Utilidades  │     │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │   Hooks      │  │  Contextos   │  │  Utilidades  │       │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
 │         │                  │                  │             │
 └─────────┼──────────────────┼──────────────────┼─────────────┘
           │                  │                  │
           ▼                  ▼                  ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      CAPA DE DATOS                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │ Repositorios │  │  API Routes  │  │   Supabase   │     │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ Repositorios │  │  API Routes  │  │   Supabase   │       │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
 │         │                  │                  │             │
 └─────────┼──────────────────┼──────────────────┼─────────────┘
           │                  │                  │
@@ -335,29 +480,29 @@ byte-chat/
 
 ┌────────────────────────────────────────────────────────────────┐
 │                         App (Root)                             │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │            ProveedorAutenticacion                        │ │
-│  │  ┌────────────────────────────────────────────────────┐ │ │
-│  │  │         ProveedorConversaciones                    │ │ │
-│  │  │  ┌──────────────────────────────────────────────┐ │ │ │
-│  │  │  │            ShellLayout                       │ │ │ │
-│  │  │  │  ┌────────────┐  ┌──────────────────────┐   │ │ │ │
-│  │  │  │  │  Sidebar   │  │      Contenido       │   │ │ │ │
-│  │  │  │  │            │  │                      │   │ │ │ │
-│  │  │  │  │ ┌────────┐ │  │  ┌────────────────┐ │   │ │ │ │
-│  │  │  │  │ │Lista   │ │  │  │  PaginaChat    │ │   │ │ │ │
-│  │  │  │  │ │Convs   │ │  │  │                │ │   │ │ │ │
-│  │  │  │  │ └────────┘ │  │  │ ┌────────────┐ │ │   │ │ │ │
-│  │  │  │  │            │  │  │ │ Mensajes   │ │ │   │ │ │ │
-│  │  │  │  │ ┌────────┐ │  │  │ └────────────┘ │ │   │ │ │ │
-│  │  │  │  │ │Botones │ │  │  │                │ │   │ │ │ │
-│  │  │  │  │ │Login   │ │  │  │ ┌────────────┐ │ │   │ │ │ │
-│  │  │  │  │ └────────┘ │  │  │ │ Compositor │ │ │   │ │ │ │
-│  │  │  │  │            │  │  │ └────────────┘ │ │   │ │ │ │
-│  │  │  │  └────────────┘  └──────────────────────┘   │ │ │ │
-│  │  │  └──────────────────────────────────────────────┘ │ │ │
-│  │  └────────────────────────────────────────────────────┘ │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │            ProveedorAutenticacion                        │  │
+│  │  ┌────────────────────────────────────────────────────┐  │  │
+│  │  │         ProveedorConversaciones                    │  │  │
+│  │  │  ┌──────────────────────────────────────────────┐  │  │  │
+│  │  │  │            ShellLayout                       │  │  │  │
+│  │  │  │  ┌────────────┐  ┌──────────────────────┐    │  │  │  │
+│  │  │  │  │  Sidebar   │  │      Contenido       │    │  │  │  │
+│  │  │  │  │            │  │                      │    │  │  │  │
+│  │  │  │  │ ┌────────┐ │  │  ┌────────────────┐  │    │  │  │  │
+│  │  │  │  │ │Lista   │ │  │  │  PaginaChat    │  │    │  │  │  │
+│  │  │  │  │ │Convs   │ │  │  │                │  │    │  │  │  │
+│  │  │  │  │ └────────┘ │  │  │ ┌────────────┐ │  │    │  │  │  │
+│  │  │  │  │            │  │  │ │ Mensajes   │ │  │    │  │  │  │
+│  │  │  │  │ ┌────────┐ │  │  │ └────────────┘ │  │    │  │  │  │
+│  │  │  │  │ │Botones │ │  │  │                │  │    │  │  │  │
+│  │  │  │  │ │Login   │ │  │  │ ┌────────────┐ │  │    │  │  │  │
+│  │  │  │  │ └────────┘ │  │  │ │ Compositor │ │  │    │  │  │  │
+│  │  │  │  │            │  │  │ └────────────┘ │  │    │  │  │  │
+│  │  │  │  └────────────┘  └──────────────────────┘    │  │  │  │
+│  │  │  └──────────────────────────────────────────────┘  │  │  │
+│  │  └────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────────────────────┘  │
 └────────────────────────────────────────────────────────────────┘
 
 ### Componentes UI Reutilizables
@@ -365,21 +510,21 @@ byte-chat/
 ┌─────────────────────────────────────────────────────────┐
 │                  Componentes UI Base                    │
 ├─────────────────────────────────────────────────────────┤
-│  Button  │  Input  │  Card  │  Label  │  ScrollArea    │
+│  Button  │  Input  │  Card  │  Label  │  ScrollArea     │
 └─────────────────────────────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
 │              Componentes Compuestos                     │
 ├─────────────────────────────────────────────────────────┤
-│  CompositorChat  │  MensajesChat  │  MensajeChat       │
+│  CompositorChat  │  MensajesChat  │  MensajeChat        │
 └─────────────────────────────────────────────────────────┘
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
 │                Componentes de Página                    │
 ├─────────────────────────────────────────────────────────┤
-│  PaginaInicio  │  PaginaChat  │  PaginaLogin           │
+│  PaginaInicio  │  PaginaChat  │  PaginaLogin            │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -534,66 +679,4 @@ mensajes: EXISTS (
 )
 ```
 
----
 
-### Tecnologías Utilizadas
-
-```
-Frontend:
-- Next.js 15.5.4
-- React 19
-- TypeScript 5
-- TailwindCSS 3
-- Framer Motion
-
-Backend:
-- Next.js API Routes
-- Google AI SDK (Gemini)
-
-Base de Datos:
-- Supabase (PostgreSQL)
-- Supabase Auth
-
-Herramientas:
-- pnpm (Package Manager)
-- ESLint (Linting)
-- Turbopack (Build Tool)
-```
-
----
-
-## 🚀 Despliegue
-
-### Requisitos Previos
-
-1. Node.js 18+
-2. pnpm instalado
-3. Cuenta de Supabase
-4. API Key de Google AI
-
-### Variables de Entorno
-
-```env
-GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key
-NEXT_PUBLIC_SUPABASE_URL=tu_url_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
-```
-
-### Comandos de Despliegue
-
-```bash
-# Desarrollo
-pnpm run dev
-
-# Producción
-pnpm run build
-pnpm start
-
-# Linting
-pnpm run lint
-```
-
----
-
-**Fecha de Documentación**: Octubre 2025  
-**Versión**: 1.0.0  
