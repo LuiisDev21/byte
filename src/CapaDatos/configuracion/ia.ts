@@ -6,20 +6,33 @@ export const MODELO_PREDETERMINADO_OPENAI = process.env.OPENAI_MODEL?.trim() || 
 
 export type ProveedorIA = "google" | "openai" | "compatible"
 
+const PROVEEDORES_COMPATIBLES_OPENAI = [
+  "openai",
+  "compatible",
+  "openrouter",
+  "deepseek",
+  "groq",
+  "ollama",
+  "together",
+  "anthropic",
+  "mistral",
+  "perplexity",
+]
+
 /**
  * Detecta qué proveedor de IA utilizar según variables de entorno o configuración explícita.
  */
 export function detectarProveedorIA(): ProveedorIA {
   const proveedorConfigurado = process.env.AI_PROVIDER?.trim().toLowerCase()
-  if (proveedorConfigurado === "openai" || proveedorConfigurado === "compatible") {
+  if (proveedorConfigurado && PROVEEDORES_COMPATIBLES_OPENAI.includes(proveedorConfigurado)) {
     return "openai"
   }
   if (proveedorConfigurado === "google" || proveedorConfigurado === "gemini") {
     return "google"
   }
 
-  // Detección automática por presencia de API Keys
-  if (process.env.OPENAI_API_KEY) {
+  // Detección automática por presencia de API Keys o URL base
+  if (process.env.OPENAI_API_KEY || process.env.OPENAI_BASE_URL) {
     return "openai"
   }
   return "google"
@@ -40,13 +53,106 @@ export function validarCredencialesIA(proveedor?: ProveedorIA): { valida: boolea
     return { valida: true }
   }
 
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  const tieneClaveGoogle = Boolean(
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GEMINI_API_KEY
+  )
+
+  if (!tieneClaveGoogle) {
     return {
       valida: false,
       mensajeError: "GOOGLE_GENERATIVE_AI_API_KEY no encontrada en las variables de entorno."
     }
   }
   return { valida: true }
+}
+
+/**
+ * Determina si el modelo soporta el parámetro 'temperature'.
+ * Modelos de razonamiento (OpenAI o1, o3, DeepSeek Reasoner, etc.) lo rechazan.
+ */
+export function soportaTemperatura(modeloId?: string): boolean {
+  if (!modeloId) return true
+  const lower = modeloId.toLowerCase()
+  if (
+    lower.startsWith("o1") ||
+    lower.includes("/o1") ||
+    lower.startsWith("o3") ||
+    lower.includes("/o3") ||
+    lower.includes("deepseek-reasoner")
+  ) {
+    return false
+  }
+  return true
+}
+
+/**
+ * Formatea errores comunes de proveedores de IA en explicaciones comprensibles y amigables.
+ */
+export function formatearErrorIA(err: unknown): string {
+  if (!err) return "⚠️ Error desconocido al conectar con el proveedor de IA."
+
+  const errorObj = err as {
+    statusCode?: number
+    status?: number
+    message?: string
+    responseBody?: string
+    data?: { error?: { message?: string; code?: string | number } }
+  }
+
+  const codigoEstado = errorObj.statusCode || errorObj.status
+  let mensaje = errorObj.message || ""
+
+  if (errorObj.data?.error?.message) {
+    mensaje = errorObj.data.error.message
+  } else if (typeof errorObj.responseBody === "string") {
+    try {
+      const parsed = JSON.parse(errorObj.responseBody)
+      if (parsed.error?.message) {
+        mensaje = parsed.error.message
+      }
+    } catch {
+      // Ignorar si no es JSON válido
+    }
+  }
+
+  if (
+    codigoEstado === 402 ||
+    /credits|balance|insufficient|saldo/i.test(mensaje)
+  ) {
+    return `⚠️ **Créditos insuficientes en el proveedor de IA**:\n\n${mensaje}\n\n*Sugerencia*: Si estás usando OpenRouter u otro proveedor, recarga saldo o utiliza un modelo gratuito (por ejemplo modelos con sufijo \`:free\` como \`liquid/lfm-2.5-2.6b:free\` o \`nvidia/nemotron-3.5-lightning:free\`).`
+  }
+
+  if (
+    codigoEstado === 401 ||
+    /api key|unauthorized|invalid_api_key|authentication/i.test(mensaje)
+  ) {
+    return `⚠️ **Error de autenticación con el proveedor de IA**:\n\n${mensaje}\n\n*Sugerencia*: Verifica que la clave de API (\`OPENAI_API_KEY\` o \`GOOGLE_GENERATIVE_AI_API_KEY\`) esté configurada correctamente en las variables de entorno de tu servidor o plataforma de hosting.`
+  }
+
+  if (
+    codigoEstado === 404 ||
+    /model|not found|no endpoints found/i.test(mensaje)
+  ) {
+    return `⚠️ **Modelo de IA no disponible o no encontrado**:\n\n${mensaje}\n\n*Sugerencia*: Verifica que el identificador del modelo sea exacto y esté habilitado para tu cuenta.`
+  }
+
+  if (
+    codigoEstado === 429 ||
+    /rate limit|too many requests|quota/i.test(mensaje)
+  ) {
+    return `⚠️ **Límite de solicitudes alcanzado (Rate Limit)**:\n\n${mensaje}\n\n*Sugerencia*: Espera unos momentos antes de enviar otro mensaje o aumenta la cuota de tu proveedor.`
+  }
+
+  if (
+    codigoEstado === 400 ||
+    /unsupported parameter|temperature/i.test(mensaje)
+  ) {
+    return `⚠️ **Parámetro incompatible con el modelo**:\n\n${mensaje}`
+  }
+
+  return `⚠️ **Error del proveedor de IA**:\n\n${mensaje || "No se pudo obtener una respuesta válida del modelo configurado."}`
 }
 
 /**
@@ -63,9 +169,21 @@ export function obtenerModeloIA(opciones?: { proveedor?: ProveedorIA; modelo?: s
   const proveedor = opciones?.proveedor || detectarProveedorIA()
 
   if (proveedor === "openai") {
+    let baseURL = process.env.OPENAI_BASE_URL?.trim()
+    if (baseURL) {
+      baseURL = baseURL.replace(/\/+$/, "")
+    }
+
+    const headers: Record<string, string> = {}
+    if (baseURL && baseURL.includes("openrouter.ai")) {
+      headers["HTTP-Referer"] = "https://www.bytechat.dev"
+      headers["X-Title"] = "Byte Chat"
+    }
+
     const openai = createOpenAI({
       apiKey: process.env.OPENAI_API_KEY || "",
-      baseURL: process.env.OPENAI_BASE_URL?.trim() || undefined,
+      baseURL: baseURL || undefined,
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
     })
     const modeloId = opciones?.modelo || MODELO_PREDETERMINADO_OPENAI
     // Usar .chat() asegura compatibilidad total con /v1/chat/completions
@@ -75,6 +193,15 @@ export function obtenerModeloIA(opciones?: { proveedor?: ProveedorIA; modelo?: s
 
   // Por defecto proveedor Google
   const modeloId = opciones?.modelo || MODELO_PREDETERMINADO_GEMINI
+  const googleKey =
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GEMINI_API_KEY
+
+  if (googleKey && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY = googleKey
+  }
+
   return google(modeloId)
 }
 

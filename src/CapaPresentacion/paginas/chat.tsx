@@ -186,7 +186,14 @@ export default function PaginaChat() {
           reader.releaseLock()
         }
 
-        if (conversacionActual && respuestaAcumulada) {
+        if (!respuestaAcumulada.trim()) {
+          const avisoVacio = "Lo siento, el proveedor de IA no devolvió ninguna respuesta. Verifica la configuración de tu modelo o las credenciales de la API."
+          chatPersistente.establecerMensajes(prev => prev.map(msg =>
+            msg.id === idMensajeAsistente
+              ? { ...msg, content: avisoVacio }
+              : msg
+          ))
+        } else if (conversacionActual) {
           const { guardarMensaje } = await import("@/CapaDatos/repositorios/mensajes")
           const dataGuardada = await guardarMensaje(conversacionActual, "assistant", respuestaAcumulada)
           if (dataGuardada?.id) {
@@ -200,6 +207,12 @@ export default function PaginaChat() {
           console.log("Regeneración abortada por el usuario")
         } else {
           console.error("Error al regenerar respuesta:", error)
+          const errorMsg = error instanceof Error ? error.message : "Error desconocido"
+          chatPersistente.establecerMensajes(prev => prev.map(msg =>
+            msg.id === idMensajeAsistente
+              ? { ...msg, content: `⚠️ Error de conexión: ${errorMsg}. Intenta de nuevo.` }
+              : msg
+          ))
         }
       } finally {
         chatLocal.establecerEstaCargando(false)
@@ -213,6 +226,7 @@ export default function PaginaChat() {
     e.preventDefault()
 
     if (usuario) {
+      let idMensajeAsistente: string | null = null
       try {
         const entradaTexto = chatLocal.entrada
         const imagenActual = chatLocal.imagenSeleccionada
@@ -278,7 +292,7 @@ export default function PaginaChat() {
           throw new Error("La respuesta no contiene un cuerpo válido para streaming")
         }
 
-        const idMensajeAsistente = (Date.now() + 1).toString()
+        idMensajeAsistente = (Date.now() + 1).toString()
         const mensajeAsistenteInicial: Mensaje = {
           id: idMensajeAsistente,
           role: "assistant",
@@ -322,11 +336,20 @@ export default function PaginaChat() {
           reader.releaseLock()
         }
 
-        const dataAsistente = await guardarMensaje(idConversacion, "assistant", respuestaAcumulada)
-        if (dataAsistente?.id) {
+        if (!respuestaAcumulada.trim()) {
+          const avisoVacio = "Lo siento, el proveedor de IA no devolvió ninguna respuesta. Verifica la configuración de tu modelo o las credenciales de la API."
           chatPersistente.establecerMensajes(prev => prev.map(msg =>
-            msg.id === idMensajeAsistente ? { ...msg, id: dataAsistente.id } : msg
+            msg.id === idMensajeAsistente
+              ? { ...msg, content: avisoVacio }
+              : msg
           ))
+        } else {
+          const dataAsistente = await guardarMensaje(idConversacion, "assistant", respuestaAcumulada)
+          if (dataAsistente?.id) {
+            chatPersistente.establecerMensajes(prev => prev.map(msg =>
+              msg.id === idMensajeAsistente ? { ...msg, id: dataAsistente.id } : msg
+            ))
+          }
         }
 
         const conversacion = conversaciones.find(c => c.id === idConversacion)
@@ -364,6 +387,14 @@ export default function PaginaChat() {
           console.log("Generación abortada por el usuario")
         } else {
           console.error("Error:", error)
+          const errorMsg = error instanceof Error ? error.message : "Error desconocido"
+          if (idMensajeAsistente) {
+            chatPersistente.establecerMensajes(prev => prev.map(msg =>
+              msg.id === idMensajeAsistente
+                ? { ...msg, content: `⚠️ Error al procesar solicitud: ${errorMsg}. Por favor intenta de nuevo.` }
+                : msg
+            ))
+          }
         }
       } finally {
         chatLocal.establecerEstaCargando(false)

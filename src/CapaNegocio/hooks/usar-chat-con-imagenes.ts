@@ -118,6 +118,20 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
               : msg
           ))
         }
+
+        const fragmentoFinal = decodificador.decode()
+        if (fragmentoFinal) {
+          textoAcumulado += fragmentoFinal
+        }
+
+        if (!textoAcumulado.trim()) {
+          const avisoVacio = "Lo siento, el proveedor de IA no devolvió ninguna respuesta. Verifica la configuración de tu modelo o las credenciales de la API."
+          establecerMensajes(prev => prev.map(msg =>
+            msg.id === mensajeAsistente.id
+              ? { ...msg, content: avisoVacio }
+              : msg
+          ))
+        }
       }
 
     } catch (error) {
@@ -208,6 +222,20 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
           establecerMensajes(prev => prev.map(msg =>
             msg.id === mensajeAsistente.id
               ? { ...msg, content: textoAcumulado }
+              : msg
+          ))
+        }
+
+        const fragmentoFinal = decodificador.decode()
+        if (fragmentoFinal) {
+          textoAcumulado += fragmentoFinal
+        }
+
+        if (!textoAcumulado.trim()) {
+          const avisoVacio = "Lo siento, el proveedor de IA no devolvió ninguna respuesta. Verifica la configuración de tu modelo o las credenciales de la API."
+          establecerMensajes(prev => prev.map(msg =>
+            msg.id === mensajeAsistente.id
+              ? { ...msg, content: avisoVacio }
               : msg
           ))
         }

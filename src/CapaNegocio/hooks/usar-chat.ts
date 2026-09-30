@@ -76,6 +76,18 @@ export function useUsarChat() {
               return copia
             })
           }
+
+          if (!asistente.trim()) {
+            const avisoVacio = "Lo siento, el proveedor de IA no devolvió ninguna respuesta. Verifica la configuración de tu modelo o las credenciales de la API."
+            establecerMensajes((prev) => {
+              const copia = [...prev]
+              const ultimoIdx = copia.length - 1
+              if (ultimoIdx >= 0 && copia[ultimoIdx].role === "assistant") {
+                copia[ultimoIdx] = { role: "assistant", content: avisoVacio }
+              }
+              return copia
+            })
+          }
         } else {
           // Server-Sent Events: parsea bloques separados por \n\n con líneas tipo "data: ..."
           let buffer = ""

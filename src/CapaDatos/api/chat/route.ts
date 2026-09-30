@@ -11,7 +11,11 @@ import {
   obtenerModeloIA, 
   validarCredencialesIA, 
   PROMPT_SISTEMA,
-  ProveedorIA 
+  ProveedorIA,
+  soportaTemperatura,
+  formatearErrorIA,
+  MODELO_PREDETERMINADO_GEMINI,
+  MODELO_PREDETERMINADO_OPENAI
 } from "@/CapaDatos/configuracion/ia"
 import { RolMensaje, ContenidoMensaje } from "@/CapaDatos/tipos/mensaje"
 
@@ -148,15 +152,103 @@ export async function POST(req: NextRequest) {
       modelo: cuerpo.model,
     })
 
-    const resultado = await streamText({
+    const modeloIdNombre = cuerpo.model || (cuerpo.provider === "google" ? MODELO_PREDETERMINADO_GEMINI : MODELO_PREDETERMINADO_OPENAI)
+    const permiteTemperatura = soportaTemperatura(modeloIdNombre)
+
+    const resultado = streamText({
       model: modelo as unknown as Parameters<typeof streamText>[0]["model"],
       system: sistema,
       messages: mensajesPreparados,
-      temperature: cuerpo.temperature ?? 0.7,
+      temperature: permiteTemperatura ? (cuerpo.temperature ?? 0.7) : undefined,
       maxOutputTokens: cuerpo.maxTokens,
     })
 
-    return resultado.toTextStreamResponse()
+    const encoder = new TextEncoder()
+    let thinkOpen = false
+    let contenidoEmitido = false
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of resultado.fullStream) {
+            if (chunk.type === "reasoning-start") {
+              if (!thinkOpen) {
+                controller.enqueue(encoder.encode("<think>\n"))
+                thinkOpen = true
+                contenidoEmitido = true
+              }
+            } else if (chunk.type === "reasoning-delta") {
+              if (!thinkOpen) {
+                controller.enqueue(encoder.encode("<think>\n"))
+                thinkOpen = true
+              }
+              if (chunk.text) {
+                controller.enqueue(encoder.encode(chunk.text))
+                contenidoEmitido = true
+              }
+            } else if (chunk.type === "reasoning-end") {
+              if (thinkOpen) {
+                controller.enqueue(encoder.encode("\n</think>\n\n"))
+                thinkOpen = false
+              }
+            } else if (chunk.type === "text-delta") {
+              if (thinkOpen) {
+                controller.enqueue(encoder.encode("\n</think>\n\n"))
+                thinkOpen = false
+              }
+              if (chunk.text) {
+                controller.enqueue(encoder.encode(chunk.text))
+                contenidoEmitido = true
+              }
+            } else if (chunk.type === "error") {
+              if (thinkOpen) {
+                controller.enqueue(encoder.encode("\n</think>\n\n"))
+                thinkOpen = false
+              }
+              console.error("[streamText error chunk]:", chunk.error)
+              const mensajeError = formatearErrorIA(chunk.error)
+              controller.enqueue(
+                encoder.encode(contenidoEmitido ? `\n\n${mensajeError}` : mensajeError)
+              )
+              contenidoEmitido = true
+            }
+          }
+
+          if (thinkOpen) {
+            controller.enqueue(encoder.encode("\n</think>\n\n"))
+          }
+
+          if (!contenidoEmitido) {
+            controller.enqueue(
+              encoder.encode(
+                "⚠️ El proveedor de IA finalizó sin generar contenido. Verifica que el modelo configurado esté disponible y activo."
+              )
+            )
+          }
+
+          controller.close()
+        } catch (err) {
+          if (thinkOpen) {
+            controller.enqueue(encoder.encode("\n</think>\n\n"))
+          }
+          console.error("[streamText iteration error]:", err)
+          const mensajeError = formatearErrorIA(err)
+          controller.enqueue(
+            encoder.encode(contenidoEmitido ? `\n\n${mensajeError}` : mensajeError)
+          )
+          controller.close()
+        }
+      },
+    })
+
+    return new Response(stream, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Content-Type-Options": "nosniff",
+      },
+    })
 
   } catch (err) {
     console.error("/api/chat error", err)
