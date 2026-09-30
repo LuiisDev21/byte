@@ -4,6 +4,7 @@
 "use client"
 import { useState, useCallback, useRef } from "react"
 import { Mensaje, ContenidoTexto, ContenidoImagen } from "@/CapaDatos/tipos/mensaje"
+import { useConfiguracionProveedorIA } from "@/CapaNegocio/contextos/contexto-proveedor-ia"
 
 interface UsarChatConImagenesRetorno {
   mensajes: Mensaje[]
@@ -19,6 +20,7 @@ interface UsarChatConImagenesRetorno {
 }
 
 export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
+  const { obtenerPayloadSolicitud } = useConfiguracionProveedorIA()
   const [mensajes, establecerMensajes] = useState<Mensaje[]>([])
   const [entrada, establecerEntrada] = useState("")
   const [imagenSeleccionada, establecerImagenSeleccionada] = useState<string | null>(null)
@@ -70,6 +72,8 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
     establecerEntrada("")
     establecerImagenSeleccionada(null)
 
+    const payloadIA = obtenerPayloadSolicitud()
+
     try {
       const respuesta = await fetch("/api/chat", {
         method: "POST",
@@ -80,7 +84,9 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
           messages: [...mensajes, mensajeUsuario].map(msg => ({
             role: msg.role,
             content: msg.content
-          }))
+          })),
+          customProvider: payloadIA.customProvider,
+          model: payloadIA.model,
         }),
         signal: controller.signal,
       })
@@ -154,7 +160,7 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
       establecerControladorAborto(null)
       controladorAbortoRef.current = null
     }
-  }, [entrada, imagenSeleccionada, mensajes, estaCargando])
+  }, [entrada, imagenSeleccionada, mensajes, estaCargando, obtenerPayloadSolicitud])
 
   const regenerar = useCallback(async () => {
     // Si no hay mensajes o está cargando, retornar
@@ -186,6 +192,8 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
 
     establecerMensajes([...mensajesBase, mensajeAsistente])
 
+    const payloadIA = obtenerPayloadSolicitud()
+
     try {
       const respuesta = await fetch("/api/chat", {
         method: "POST",
@@ -196,7 +204,9 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
           messages: mensajesBase.map(msg => ({
             role: msg.role,
             content: msg.content
-          }))
+          })),
+          customProvider: payloadIA.customProvider,
+          model: payloadIA.model,
         }),
         signal: controller.signal,
       })
@@ -260,7 +270,7 @@ export function useUsarChatConImagenes(): UsarChatConImagenesRetorno {
       establecerControladorAborto(null)
       controladorAbortoRef.current = null
     }
-  }, [mensajes, estaCargando])
+  }, [mensajes, estaCargando, obtenerPayloadSolicitud])
 
   return {
     mensajes,

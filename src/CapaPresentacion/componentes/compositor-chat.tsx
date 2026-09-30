@@ -21,6 +21,7 @@ import {
   PromptInputAttachments,
   PromptInputAttachmentItem,
 } from "@/CapaPresentacion/componentes/ui/attachments"
+import { SelectorModelos } from "@/CapaPresentacion/componentes/selector-modelos"
 import { cn } from "@/CapaNegocio/utilidades"
 
 interface Props {
@@ -241,7 +242,7 @@ export function CompositorChat({
 
               {/* Barra de acciones inferior */}
               <PromptInputActions>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {onImageSelect && (
                     <>
                       <input
@@ -265,6 +266,7 @@ export function CompositorChat({
                       </PromptInputAction>
                     </>
                   )}
+                  <SelectorModelos />
                 </div>
 
                 <div className="flex items-center gap-1.5">

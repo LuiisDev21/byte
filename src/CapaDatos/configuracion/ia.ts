@@ -2,7 +2,7 @@ import { google } from "@ai-sdk/google"
 import { createOpenAI } from "@ai-sdk/openai"
 
 export const MODELO_PREDETERMINADO_GEMINI = process.env.GOOGLE_MODEL?.trim() || process.env.DEFAULT_MODEL?.trim() || "gemini-2.5-flash"
-export const MODELO_PREDETERMINADO_OPENAI = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini"
+export const MODELO_PREDETERMINADO_OPENAI = process.env.OPENAI_MODEL?.trim() || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
 
 export type ProveedorIA = "google" | "openai" | "compatible"
 
@@ -80,7 +80,8 @@ export function soportaTemperatura(modeloId?: string): boolean {
     lower.includes("/o1") ||
     lower.startsWith("o3") ||
     lower.includes("/o3") ||
-    lower.includes("deepseek-reasoner")
+    lower.includes("deepseek-reasoner") ||
+    lower.includes("reasoning")
   ) {
     return false
   }
@@ -165,7 +166,35 @@ export type InstanciaModeloIA =
   | ReturnType<ReturnType<typeof createOpenAI>["chat"]>
   | ReturnType<ReturnType<typeof createOpenAI>>
 
-export function obtenerModeloIA(opciones?: { proveedor?: ProveedorIA; modelo?: string }): InstanciaModeloIA {
+export interface ProveedorPersonalizadoEntrada {
+  name?: string
+  baseURL: string
+  apiKey: string
+}
+
+export function obtenerModeloIA(opciones?: {
+  proveedor?: ProveedorIA
+  modelo?: string
+  customProvider?: ProveedorPersonalizadoEntrada
+}): InstanciaModeloIA {
+  // 1. Si el usuario envió su propio proveedor (BYOK)
+  if (opciones?.customProvider && opciones.customProvider.baseURL && opciones.customProvider.apiKey) {
+    const baseURL = opciones.customProvider.baseURL.trim().replace(/\/+$/, "")
+    const headers: Record<string, string> = {}
+    if (baseURL.includes("openrouter.ai")) {
+      headers["HTTP-Referer"] = "https://www.bytechat.dev"
+      headers["X-Title"] = "Byte Chat"
+    }
+
+    const openai = createOpenAI({
+      apiKey: opciones.customProvider.apiKey.trim(),
+      baseURL,
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
+    })
+    const modeloId = opciones.modelo || "gpt-4o-mini"
+    return openai.chat(modeloId)
+  }
+
   const proveedor = opciones?.proveedor || detectarProveedorIA()
 
   if (proveedor === "openai") {

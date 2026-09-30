@@ -11,6 +11,7 @@ import { useUsarDesplazamientoAutomatico } from "@/CapaNegocio/hooks/usar-despla
 import { useConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
 import { useAutenticacion } from "@/CapaNegocio/contextos/contexto-autenticacion"
 import { useChatPersistente } from "@/CapaNegocio/hooks/usar-chat-persistente"
+import { useConfiguracionProveedorIA } from "@/CapaNegocio/contextos/contexto-proveedor-ia"
 import type { ContenidoMensaje, Mensaje } from "@/CapaDatos/tipos/mensaje"
 
 export default function PaginaChat() {
@@ -19,6 +20,7 @@ export default function PaginaChat() {
   const { establecerConversacionActual, conversacionActual, crearNuevaConversacion, conversaciones, actualizarTitulo } = useConversaciones()
   const chatLocal = useUsarChatConImagenes()
   const chatPersistente = useChatPersistente()
+  const { obtenerPayloadSolicitud } = useConfiguracionProveedorIA()
   const refContenedorChat = useRef<HTMLDivElement>(null)
   const refContenedorScroll = useRef<HTMLDivElement>(null)
   const [mostrarBotonScroll, establecerMostrarBotonScroll] = useState(false)
@@ -140,12 +142,16 @@ export default function PaginaChat() {
       chatPersistente.establecerMensajes(prev => [...prev, mensajeAsistenteInicial])
       let respuestaAcumulada = ""
 
+      const payloadIA = obtenerPayloadSolicitud()
+
       try {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: mensajesActuales,
+            customProvider: payloadIA.customProvider,
+            model: payloadIA.model,
           }),
           signal: controlador.signal,
         })
@@ -220,7 +226,7 @@ export default function PaginaChat() {
     } else {
       await chatLocal.regenerar()
     }
-  }, [chatLocal, usuario, chatPersistente, conversacionActual])
+  }, [chatLocal, usuario, chatPersistente, conversacionActual, obtenerPayloadSolicitud])
 
   const manejarEnvio: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
@@ -277,11 +283,15 @@ export default function PaginaChat() {
 
         const controlador = chatPersistente.crearControladorAborto()
 
+        const payloadIA = obtenerPayloadSolicitud()
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: [...chatPersistente.mensajes, mensajeUsuario],
+            customProvider: payloadIA.customProvider,
+            model: payloadIA.model,
           }),
           signal: controlador.signal,
         })

@@ -27,6 +27,12 @@ interface MensajeEntrante {
   content: ContenidoMensaje
 }
 
+export interface ProveedorPersonalizadoInput {
+  name?: string
+  baseURL: string
+  apiKey: string
+}
+
 interface CuerpoSolicitud {
   messages?: MensajeEntrante[]
   prompt?: string
@@ -35,6 +41,7 @@ interface CuerpoSolicitud {
   system?: string
   provider?: ProveedorIA
   model?: string
+  customProvider?: ProveedorPersonalizadoInput
 }
 
 const ENCABEZADOS_JSON = { "content-type": "application/json" }
@@ -131,12 +138,23 @@ export async function POST(req: NextRequest) {
   try {
     const cuerpo: CuerpoSolicitud = await req.json().catch(() => ({}))
 
-    const validacion = validarCredencialesIA(cuerpo.provider)
-    if (!validacion.valida) {
-      return crearRespuestaError(
-        validacion.mensajeError || "Credenciales de API de IA no configuradas.",
-        500
-      )
+    // Si viene customProvider (BYOK del cliente), se valida que contenga baseURL y apiKey
+    const tieneProveedorPersonalizado = Boolean(
+      cuerpo.customProvider &&
+      typeof cuerpo.customProvider.baseURL === "string" &&
+      cuerpo.customProvider.baseURL.trim() &&
+      typeof cuerpo.customProvider.apiKey === "string" &&
+      cuerpo.customProvider.apiKey.trim()
+    )
+
+    if (!tieneProveedorPersonalizado) {
+      const validacion = validarCredencialesIA(cuerpo.provider)
+      if (!validacion.valida) {
+        return crearRespuestaError(
+          validacion.mensajeError || "Credenciales de API de IA no configuradas en el servidor.",
+          500
+        )
+      }
     }
 
     const sistema = (cuerpo.system ?? PROMPT_SISTEMA).trim()
@@ -150,6 +168,7 @@ export async function POST(req: NextRequest) {
     const modelo = obtenerModeloIA({
       proveedor: cuerpo.provider,
       modelo: cuerpo.model,
+      customProvider: tieneProveedorPersonalizado ? cuerpo.customProvider : undefined,
     })
 
     const modeloIdNombre = cuerpo.model || (cuerpo.provider === "google" ? MODELO_PREDETERMINADO_GEMINI : MODELO_PREDETERMINADO_OPENAI)

@@ -93,6 +93,9 @@ export const metadata: Metadata = {
   },
 }
 
+import { ProveedorConfiguracionIA } from "@/CapaNegocio/contextos/contexto-proveedor-ia"
+import { DialogoProveedorIA } from "@/CapaPresentacion/componentes/dialogo-proveedor-ia"
+
 export default function LayoutRaiz({
   children,
 }: Readonly<{
@@ -128,7 +131,10 @@ export default function LayoutRaiz({
         <Analytics/>
         <ProveedorAutenticacion>
           <ProveedorConversaciones>
-            <ShellLayout>{children}</ShellLayout>
+            <ProveedorConfiguracionIA>
+              <ShellLayout>{children}</ShellLayout>
+              <DialogoProveedorIA />
+            </ProveedorConfiguracionIA>
           </ProveedorConversaciones>
         </ProveedorAutenticacion>
       </body>

@@ -6,6 +6,7 @@ import {
   soportaTemperatura,
   formatearErrorIA
 } from "@/CapaDatos/configuracion/ia"
+import { MODELOS_PREDETERMINADOS_SERVIDOR } from "@/CapaDatos/tipos/proveedor-personalizado"
 
 describe("Abstracción Multi-Proveedor de IA", () => {
   const envOriginal = { ...process.env }
@@ -101,15 +102,17 @@ describe("Abstracción Multi-Proveedor de IA", () => {
     expect(validarCredencialesIA("google").valida).toBe(true)
   })
 
-  it("soportaTemperatura debe rechazar modelos de razonamiento (o1, o3, deepseek-reasoner)", () => {
+  it("soportaTemperatura debe rechazar modelos de razonamiento (o1, o3, deepseek-reasoner, nemotron reasoning)", () => {
     expect(soportaTemperatura("o1-mini")).toBe(false)
     expect(soportaTemperatura("o1-preview")).toBe(false)
     expect(soportaTemperatura("o3-mini")).toBe(false)
     expect(soportaTemperatura("deepseek-reasoner")).toBe(false)
     expect(soportaTemperatura("openai/o1")).toBe(false)
+    expect(soportaTemperatura("nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")).toBe(false)
     expect(soportaTemperatura("gpt-4o")).toBe(true)
     expect(soportaTemperatura("gemini-2.5-flash")).toBe(true)
-    expect(soportaTemperatura("liquid/lfm-2.5-2.6b:free")).toBe(true)
+    expect(soportaTemperatura("qwen/qwen3.8-27b:free")).toBe(true)
+    expect(soportaTemperatura("google/gemma-4-26b-a4b-it:free")).toBe(true)
   })
 
   it("formatearErrorIA debe formatear error 402 de créditos insuficientes con sugerencias claras", () => {
@@ -139,5 +142,13 @@ describe("Abstracción Multi-Proveedor de IA", () => {
     }
     const resultado = formatearErrorIA(error404)
     expect(resultado).toContain("Modelo de IA no disponible")
+  })
+
+  it("debe configurar exactamente los 3 modelos gratuitos de servidor solicitados", () => {
+    expect(MODELOS_PREDETERMINADOS_SERVIDOR).toEqual([
+      "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "qwen/qwen3.8-27b:free",
+      "google/gemma-4-26b-a4b-it:free",
+    ])
   })
 })

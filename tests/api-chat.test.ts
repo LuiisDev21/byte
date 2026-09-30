@@ -98,4 +98,30 @@ describe("API Route /api/chat", () => {
     expect(contenidoAcumulado.length).toBeGreaterThan(0)
     expect(contenidoAcumulado).toContain("⚠️")
   })
+
+  it("debe permitir customProvider incluso si no hay credenciales en el servidor", async () => {
+    delete process.env.OPENAI_API_KEY
+    delete process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    delete process.env.GOOGLE_API_KEY
+    delete process.env.GEMINI_API_KEY
+
+    const req = new NextRequest("http://localhost:3000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Hola perro" }],
+        customProvider: {
+          name: "Mi Proveedor",
+          baseURL: "https://api.openai.com/v1",
+          apiKey: "sk-cliente-key",
+        },
+        model: "gpt-4o-mini",
+      }),
+    })
+
+    const resp = await POST(req)
+    // No debe dar error 500 de credenciales no configuradas
+    expect(resp.status).toBe(200)
+    expect(resp.body).toBeDefined()
+  })
 })
