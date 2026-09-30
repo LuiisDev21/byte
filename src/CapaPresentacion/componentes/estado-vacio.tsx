@@ -23,12 +23,14 @@ export function EstadoVacio({ onPreguntaClick }: Props) {
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
     >
       <div className="text-center text-muted-foreground">
-        <ByteIcon ariaHidden className="mx-auto mb-4 size-20 md:size-24 text-foreground/50" />
-        <h1 id="empty-title" className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground">
+        <div className="mx-auto mb-4 flex size-20 md:size-24 items-center justify-center rounded-3xl bg-secondary/60 p-4 border border-border shadow-xs">
+          <ByteIcon ariaHidden className="size-full text-primary" />
+        </div>
+        <h1 id="empty-title" className="font-heading text-2xl md:text-3xl lg:text-4xl font-normal text-foreground leading-tight">
           ¡Bienvenido a Byte Chat!
         </h1>
-        <p className="mt-2 text-sm md:text-base lg:text-lg text-muted-foreground">
-          Tu asistente AI sobre perros
+        <p className="mt-2 text-sm md:text-base text-muted-foreground">
+          Tu asistente AI especializado en perros
         </p>
       </div>
       {onPreguntaClick && (

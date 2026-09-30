@@ -1,1 +1,4 @@
-export { POST, runtime, dynamic } from "@/CapaDatos/api/chat/route"
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+export { POST } from "@/CapaDatos/api/chat/route"

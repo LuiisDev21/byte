@@ -55,17 +55,17 @@ export function SidebarMovil({ open, onClose }: Props) {
         aria-label="Menú lateral"
         ref={refPanel}
         tabIndex={-1}
-        className={`absolute left-0 top-0 h-full w-[80vw] max-w-72 bg-sidebar border-r outline-none transition-transform duration-300 ${
+        className={`absolute left-0 top-0 h-full w-[80vw] max-w-72 bg-sidebar border-r border-sidebar-border outline-none transition-transform duration-300 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-3 border-b">
+        <div className="flex items-center justify-between p-3 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <ByteIcon className="size-4 text-primary" />
-            <span className="text-sm font-medium">Byte Chat</span>
+            <ByteIcon className="size-4 text-sidebar-primary" />
+            <span className="font-heading text-sm text-sidebar-foreground">Byte Chat</span>
           </div>
-          <Button size="icon" variant="ghost" aria-label="Cerrar menú" onClick={onClose}>
-            <X className="size-5" />
+          <Button size="icon-sm" variant="ghost" className="rounded-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" aria-label="Cerrar menú" onClick={onClose}>
+            <X className="size-4" />
           </Button>
         </div>
         <div className="h-[calc(100%-3rem)]">

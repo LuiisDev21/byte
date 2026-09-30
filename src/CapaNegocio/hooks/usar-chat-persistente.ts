@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react"
-import { guardarMensaje, obtenerMensajes } from "@/CapaDatos/repositorios/mensajes"
+import { useState, useCallback, useEffect, useRef } from "react"
+import { guardarMensaje, obtenerMensajes, eliminarMensaje } from "@/CapaDatos/repositorios/mensajes"
 import { useConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
 import { useAutenticacion } from "@/CapaNegocio/contextos/contexto-autenticacion"
 import type { ContenidoMensaje, Mensaje } from "@/CapaDatos/tipos/mensaje"
@@ -9,6 +9,8 @@ export function useChatPersistente() {
   const { conversacionActual } = useConversaciones()
   const [mensajes, establecerMensajes] = useState<Mensaje[]>([])
   const [cargandoHistorial, establecerCargandoHistorial] = useState(false)
+  const [controladorAborto, establecerControladorAborto] = useState<AbortController | null>(null)
+  const controladorAbortoRef = useRef<AbortController | null>(null)
 
   // Cargar mensajes cuando cambia la conversación
   useEffect(() => {
@@ -38,6 +40,47 @@ export function useChatPersistente() {
     cargarMensajes()
   }, [conversacionActual, usuario])
 
+  const detener = useCallback(() => {
+    if (controladorAbortoRef.current) {
+      controladorAbortoRef.current.abort()
+      controladorAbortoRef.current = null
+    }
+    if (controladorAborto) {
+      controladorAborto.abort()
+      establecerControladorAborto(null)
+    }
+  }, [controladorAborto])
+
+  const crearControladorAborto = useCallback(() => {
+    if (controladorAbortoRef.current) {
+      controladorAbortoRef.current.abort()
+    }
+    const nuevoControlador = new AbortController()
+    controladorAbortoRef.current = nuevoControlador
+    establecerControladorAborto(nuevoControlador)
+    return nuevoControlador
+  }, [])
+
+  const eliminarUltimoMensajeAsistente = useCallback(async () => {
+    const ultimo = mensajes[mensajes.length - 1]
+    if (!ultimo || ultimo.role !== "assistant") return
+
+    establecerMensajes(prev => {
+      if (prev.length > 0 && prev[prev.length - 1].role === "assistant") {
+        return prev.slice(0, -1)
+      }
+      return prev
+    })
+
+    if (conversacionActual && usuario && ultimo.id) {
+      try {
+        await eliminarMensaje(ultimo.id)
+      } catch (error) {
+        console.warn("No se pudo eliminar mensaje de la base de datos:", error)
+      }
+    }
+  }, [mensajes, conversacionActual, usuario])
+
   const guardarMensajeEnBD = useCallback(async (
     rol: "user" | "assistant",
     contenido: ContenidoMensaje
@@ -56,7 +99,6 @@ export function useChatPersistente() {
     
     // Guardar en BD si hay usuario autenticado y conversación activa
     if (usuario && conversacionActual) {
-      // Usar setTimeout para asegurar que la conversación esté establecida
       setTimeout(() => {
         guardarMensajeEnBD(mensaje.role, mensaje.content)
       }, 100)
@@ -72,6 +114,10 @@ export function useChatPersistente() {
     agregarMensaje,
     limpiarMensajes,
     cargandoHistorial,
-    establecerMensajes
+    establecerMensajes,
+    detener,
+    crearControladorAborto,
+    controladorAborto,
+    eliminarUltimoMensajeAsistente
   }
 }

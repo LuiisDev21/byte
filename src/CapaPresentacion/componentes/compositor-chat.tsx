@@ -1,79 +1,97 @@
 /**
- * Componente de entrada de mensajes del chat con soporte para imágenes.
- * - Maneja carga de archivos y drag & drop.
- * - Funciones: procesarArchivoImagen(), manejarSeleccionArchivo(), manejarPegar(), manejarSoltar()
- *   para procesar imágenes desde archivo, clipboard o arrastrar.
- * - Diseño moderno: campo redondeado con botones integrados (imagen + enviar).
- * - Validación: máximo 10MB, solo imágenes, botón disabled cuando no hay contenido.
+ * Componente de entrada de mensajes del chat con soporte para imágenes inspirado en AI SDK Elements.
+ * - Primitivas modulares: PromptInput, PromptInputTextarea, PromptInputAttachments, PromptInputActions, PromptInputSubmit, PromptInputStop.
+ * - Maneja carga de archivos, pegado desde portapapeles y drag & drop.
+ * - Validación: máximo 10MB, solo imágenes.
+ * - Estado de carga: botón Stop interactivo (onStop) durante streaming o envío; botón Submit 3D con relieve inset.
  */
 "use client"
-import { useCallback } from "react"
-import { SendHorizonal, ImageIcon, X } from "lucide-react"
-import { Button } from "@/CapaPresentacion/componentes/ui/boton"
-import { Input } from "@/CapaPresentacion/componentes/ui/entrada"
-import { useRef, useState, useEffect } from "react"
-import Image from "next/image"
 
-type Props = {
+import { useCallback, useRef, useState, useEffect } from "react"
+import { ImageIcon } from "lucide-react"
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputActions,
+  PromptInputAction,
+  PromptInputSubmit,
+  PromptInputStop,
+} from "@/CapaPresentacion/componentes/ui/prompt-input"
+import {
+  PromptInputAttachments,
+  PromptInputAttachmentItem,
+} from "@/CapaPresentacion/componentes/ui/attachments"
+import { cn } from "@/CapaNegocio/utilidades"
+
+interface Props {
   value: string
   onChange: (v: string) => void
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
   disabled?: boolean
+  isLoading?: boolean
+  onStop?: () => void
   selectedImage?: string | null
   onImageSelect?: (image: string) => void
   onImageRemove?: () => void
 }
 
-export function CompositorChat({ 
-  value, 
-  onChange, 
-  onSubmit, 
-  disabled,
+export function CompositorChat({
+  value,
+  onChange,
+  onSubmit,
+  disabled = false,
+  isLoading = false,
+  onStop,
   selectedImage,
   onImageSelect,
-  onImageRemove
+  onImageRemove,
 }: Props) {
   const refEntradaArchivo = useRef<HTMLInputElement>(null)
-  const refEntrada = useRef<HTMLInputElement>(null)
-  const [estaCargando, establecerEstaCargando] = useState(false)
+  const refTextarea = useRef<HTMLTextAreaElement>(null)
+  const [estaCargandoArchivo, establecerEstaCargandoArchivo] = useState(false)
   const [estaArrastrando, establecerEstaArrastrando] = useState(false)
-  const tieneContenido = value.trim() || selectedImage
+  const tieneContenido = Boolean(value.trim() || selectedImage)
 
-  const procesarArchivoImagen = useCallback(async (archivo: File) => {
-    if (!onImageSelect) return
+  const procesarArchivoImagen = useCallback(
+    async (archivo: File) => {
+      if (!onImageSelect) return
 
-    if (!archivo.type.startsWith('image/')) {
-      alert('Por favor selecciona una imagen válida')
-      return
-    }
-
-    if (archivo.size > 10 * 1024 * 1024) {
-      alert('La imagen es muy grande. Máximo 10MB.')
-      return
-    }
-
-    establecerEstaCargando(true)
-    
-    try {
-      const lector = new FileReader()
-      lector.onload = (e) => {
-        const resultado = e.target?.result as string
-        onImageSelect(resultado)
-        establecerEstaCargando(false)
+      if (!archivo.type.startsWith("image/")) {
+        alert("Por favor selecciona una imagen válida")
+        return
       }
-      lector.onerror = () => {
-        alert('Error al cargar la imagen')
-        establecerEstaCargando(false)
-      }
-      lector.readAsDataURL(archivo)
-    } catch (error) {
-      console.error('Error al procesar imagen:', error)
-      alert('Error al procesar la imagen')
-      establecerEstaCargando(false)
-    }
-  }, [onImageSelect])
 
-  const manejarSeleccionArchivo = async (evento: React.ChangeEvent<HTMLInputElement>) => {
+      if (archivo.size > 10 * 1024 * 1024) {
+        alert("La imagen es muy grande. Máximo 10MB.")
+        return
+      }
+
+      establecerEstaCargandoArchivo(true)
+
+      try {
+        const lector = new FileReader()
+        lector.onload = (e) => {
+          const resultado = e.target?.result as string
+          onImageSelect(resultado)
+          establecerEstaCargandoArchivo(false)
+        }
+        lector.onerror = () => {
+          alert("Error al cargar la imagen")
+          establecerEstaCargandoArchivo(false)
+        }
+        lector.readAsDataURL(archivo)
+      } catch (error) {
+        console.error("Error al procesar imagen:", error)
+        alert("Error al procesar la imagen")
+        establecerEstaCargandoArchivo(false)
+      }
+    },
+    [onImageSelect]
+  )
+
+  const manejarSeleccionArchivo = async (
+    evento: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const archivo = evento.target.files?.[0]
     if (!archivo) return
     await procesarArchivoImagen(archivo)
@@ -86,7 +104,7 @@ export function CompositorChat({
   const manejarEliminarImagen = () => {
     onImageRemove?.()
     if (refEntradaArchivo.current) {
-      refEntradaArchivo.current.value = ''
+      refEntradaArchivo.current.value = ""
     }
   }
 
@@ -98,8 +116,8 @@ export function CompositorChat({
 
     for (let i = 0; i < elementos.length; i++) {
       const elemento = elementos[i]
-      
-      if (elemento.type.startsWith('image/')) {
+
+      if (elemento.type.startsWith("image/")) {
         evento.preventDefault()
         const archivo = elemento.getAsFile()
         if (archivo) {
@@ -123,14 +141,14 @@ export function CompositorChat({
   const manejarSoltar = async (evento: React.DragEvent) => {
     evento.preventDefault()
     establecerEstaArrastrando(false)
-    
+
     if (!onImageSelect || disabled) return
 
     const archivos = evento.dataTransfer?.files
     if (!archivos || archivos.length === 0) return
 
     const archivo = archivos[0]
-    if (archivo.type.startsWith('image/')) {
+    if (archivo.type.startsWith("image/")) {
       await procesarArchivoImagen(archivo)
     }
   }
@@ -138,9 +156,10 @@ export function CompositorChat({
   useEffect(() => {
     const manejarPegarGlobal = async (evento: ClipboardEvent) => {
       const elementoActivo = document.activeElement
-      const estaEntradaEnfocada = elementoActivo === refEntrada.current
-      const ningunElementoEnfocado = !elementoActivo || elementoActivo === document.body
-      
+      const estaEntradaEnfocada = elementoActivo === refTextarea.current
+      const ningunElementoEnfocado =
+        !elementoActivo || elementoActivo === document.body
+
       if (!estaEntradaEnfocada && !ningunElementoEnfocado) return
       if (!onImageSelect || disabled) return
 
@@ -149,8 +168,8 @@ export function CompositorChat({
 
       for (let i = 0; i < elementos.length; i++) {
         const elemento = elementos[i]
-        
-        if (elemento.type.startsWith('image/')) {
+
+        if (elemento.type.startsWith("image/")) {
           evento.preventDefault()
           const archivo = elemento.getAsFile()
           if (archivo) {
@@ -161,106 +180,109 @@ export function CompositorChat({
       }
     }
 
-    document.addEventListener('paste', manejarPegarGlobal)
-    return () => document.removeEventListener('paste', manejarPegarGlobal)
-  }, [procesarArchivoImagen, disabled])
+    document.addEventListener("paste", manejarPegarGlobal)
+    return () => document.removeEventListener("paste", manejarPegarGlobal)
+  }, [procesarArchivoImagen, disabled, onImageSelect])
 
   return (
-    <div className="w-full bg-background/95 backdrop-blur-sm border-t">
-      <div className="mx-auto w-full max-w-4xl p-3 md:p-4">
-        <div 
-          className={`w-full space-y-3 transition-colors ${
-            estaArrastrando ? 'bg-accent/50 rounded-lg p-2' : ''
-          }`}
+    <div className="w-full pb-4 pt-2 px-3 md:px-6 bg-gradient-to-t from-background via-background/95 to-transparent">
+      <div className="mx-auto w-full max-w-3xl">
+        <div
+          className="w-full"
           onDragOver={manejarArrastrarSobre}
           onDragLeave={manejarArrastrarFuera}
           onDrop={manejarSoltar}
         >
           {estaArrastrando && (
-            <div className="flex items-center justify-center p-8 border-2 border-dashed border-primary/50 rounded-lg bg-primary/5">
+            <div className="flex items-center justify-center p-6 mb-3 border-2 border-dashed border-primary/50 rounded-3xl bg-primary/5 animate-in fade-in zoom-in-95 duration-150">
               <div className="text-center">
-                <ImageIcon className="mx-auto h-8 w-8 text-primary/70 mb-2" />
-                <p className="text-sm text-primary/70 font-medium">Suelta la imagen aquí</p>
+                <ImageIcon className="mx-auto h-8 w-8 text-primary/70 mb-2 animate-bounce" />
+                <p className="text-sm text-primary font-medium">
+                  Suelta la imagen aquí para adjuntarla
+                </p>
               </div>
             </div>
           )}
 
-          {selectedImage && !estaArrastrando && (
-            <div className="flex justify-start">
-              <div className="relative">
-                <div className="relative w-20 h-20 rounded-lg overflow-hidden border bg-card">
-                  <Image
+          <form onSubmit={onSubmit} className="w-full">
+            <PromptInput
+              className={cn(
+                "transition-all duration-200",
+                estaArrastrando && "border-primary ring-2 ring-primary/20"
+              )}
+            >
+              {/* Adjuntos renderizados con PromptInputAttachments */}
+              {selectedImage && !estaArrastrando && (
+                <PromptInputAttachments>
+                  <PromptInputAttachmentItem
                     src={selectedImage}
                     alt="Imagen seleccionada"
-                    fill
-                    className="object-cover"
+                    onRemove={manejarEliminarImagen}
+                    disabled={disabled || isLoading}
                   />
-                </div>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="destructive"
-                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full"
-                  onClick={manejarEliminarImagen}
-                  disabled={disabled}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-          <form onSubmit={onSubmit} className="w-full">
-            <div className="relative flex items-center">
-              <Input
-                ref={refEntrada}
-                placeholder={
-                  estaArrastrando 
-                    ? "Suelta la imagen aquí..." 
-                    : selectedImage 
-                      ? "Pregunta sobre la imagen..." 
-                      : "Escribe tu mensaje"
-                }
-                className="w-full h-12 pl-12 pr-12 rounded-full border bg-card shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 text-sm"
+                </PromptInputAttachments>
+              )}
+
+              {/* Textarea elástico autoajustable */}
+              <PromptInputTextarea
+                ref={refTextarea}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onPaste={manejarPegar}
                 disabled={disabled}
+                placeholder={
+                  estaArrastrando
+                    ? "Suelta la imagen aquí..."
+                    : selectedImage
+                    ? "Pregunta a Byte sobre esta imagen..."
+                    : "Consulta a Byte sobre tu perro (síntomas, dieta, conducta)..."
+                }
               />
-              
-              {onImageSelect && (
-                <>
-                  <input
-                    ref={refEntradaArchivo}
-                    type="file"
-                    accept="image/*"
-                    onChange={manejarSeleccionArchivo}
-                    className="hidden"
-                    disabled={disabled || estaCargando}
-                  />
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="absolute left-1 size-10 rounded-full shrink-0 hover:bg-accent"
-                    onClick={manejarClicBotonImagen}
-                    disabled={disabled || estaCargando}
-                    title="Adjuntar imagen (o pega desde el portapapeles)"
-                  >
-                    <ImageIcon className="size-4 text-muted-foreground" />
-                  </Button>
-                </>
-              )}
-              
-              <Button 
-                type="submit" 
-                size="icon" 
-                aria-label="Enviar" 
-                disabled={disabled || !tieneContenido}
-                className="absolute right-1 size-10 rounded-full shrink-0"
-              >
-                <SendHorizonal className="size-4" />
-              </Button>
-            </div>
+
+              {/* Barra de acciones inferior */}
+              <PromptInputActions>
+                <div className="flex items-center gap-1.5">
+                  {onImageSelect && (
+                    <>
+                      <input
+                        ref={refEntradaArchivo}
+                        type="file"
+                        accept="image/*"
+                        onChange={manejarSeleccionArchivo}
+                        className="hidden"
+                        disabled={disabled || estaCargandoArchivo}
+                      />
+                      <PromptInputAction
+                        type="button"
+                        variant="ghost"
+                        onClick={manejarClicBotonImagen}
+                        disabled={disabled || estaCargandoArchivo}
+                        aria-label="Adjuntar imagen"
+                        title="Adjuntar imagen (o pega desde el portapapeles)"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                      >
+                        <ImageIcon className="size-4" />
+                      </PromptInputAction>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {isLoading ? (
+                    <PromptInputStop
+                      onClick={onStop}
+                      title="Detener respuesta"
+                      aria-label="Detener respuesta"
+                    />
+                  ) : (
+                    <PromptInputSubmit
+                      disabled={disabled || !tieneContenido}
+                      aria-label="Enviar mensaje"
+                    />
+                  )}
+                </div>
+              </PromptInputActions>
+            </PromptInput>
           </form>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { useAutenticacion } from "./contexto-autenticacion"
 import {
   crearConversacion,
@@ -36,7 +36,7 @@ export function ProveedorConversaciones({ children }: { children: React.ReactNod
   const [conversacionActual, establecerConversacionActual] = useState<string | null>(null)
   const [cargando, establecerCargando] = useState(false)
 
-  const recargarConversaciones = async () => {
+  const recargarConversaciones = useCallback(async () => {
     if (!usuario) {
       establecerConversaciones([])
       return
@@ -51,11 +51,11 @@ export function ProveedorConversaciones({ children }: { children: React.ReactNod
     } finally {
       establecerCargando(false)
     }
-  }
+  }, [usuario])
 
   useEffect(() => {
     recargarConversaciones()
-  }, [usuario])
+  }, [recargarConversaciones])
 
   const crearNuevaConversacion = async () => {
     if (!usuario) {

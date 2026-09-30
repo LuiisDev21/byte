@@ -11,9 +11,9 @@ import {
   Sparkles, 
   Check, 
   Facebook, 
-  Instagram,
-  MessageCircle,
-  Github
+  Instagram, 
+  MessageCircle, 
+  Github 
 } from "lucide-react"
 import { ByteIcon } from "@/CapaPresentacion/componentes/byte-icon"
 
@@ -129,12 +129,12 @@ export default function PaginaInicio() {
   const beneficios = useMemo(() => ["100% Gratis", "Sin registro", "Respuestas instantáneas"], [])
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <motion.header 
         initial={{ y: -100, opacity: 0 }}
         animate={estaMontado ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
+        className="w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
         role="banner"
       >
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function PaginaInicio() {
             className="flex items-center gap-2"
           >
             <ByteIcon className="size-6 text-primary" />
-            <span className="text-xl font-bold text-foreground">Byte Chat</span>
+            <span className="font-heading text-xl text-foreground">Byte Chat</span>
           </motion.div>
           <motion.div
             initial={{ x: 20, opacity: 0 }}
@@ -153,12 +153,12 @@ export default function PaginaInicio() {
             transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-3"
           >
-            <Button asChild size="icon" variant="outline" className="border-[#7A4F2F] hover:bg-[#7A4F2F]/10 hover:border-[#7A4F2F]">
-              <a href="https://github.com/Luiisdev21/byte" target="_blank" rel="noopener noreferrer" aria-label="Repositorio de GitHub">
-                <Github className="size-5 text-[#7A4F2F]" />
+            <Button asChild size="icon" variant="outline" aria-label="Repositorio de GitHub">
+              <a href="https://github.com/Luiisdev21/byte" target="_blank" rel="noopener noreferrer">
+                <Github className="size-5" />
               </a>
             </Button>
-            <Button asChild size="lg" className="bg-[#7A4F2F] hover:bg-[#7A4F2F]/90 text-white">
+            <Button asChild size="lg" variant="default">
               <Link href="/login">Iniciar sesión</Link>
             </Button>
           </motion.div>
@@ -181,7 +181,7 @@ export default function PaginaInicio() {
                   visible: { opacity: 1, y: 0 }
                 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight"
+                className="font-heading text-4xl md:text-5xl lg:text-6xl font-normal text-foreground leading-[1.1] tracking-tight"
               >
                 ByteChat - Tu Experto AI en Perros
               </motion.h1>
@@ -191,7 +191,7 @@ export default function PaginaInicio() {
                   visible: { opacity: 1, y: 0 }
                 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="text-lg md:text-xl text-foreground/90 leading-relaxed"
+                className="text-lg md:text-xl text-muted-foreground leading-relaxed"
               >
                 Obtén respuestas instantáneas sobre cuidado canino, entrenamiento, salud y razas. 
                 Tu asistente personal especializado en perros disponible 24/7.
@@ -205,7 +205,7 @@ export default function PaginaInicio() {
                 whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button asChild size="lg" className="bg-[#7A4F2F] hover:bg-[#7A4F2F]/90 text-white text-lg px-8 py-6 h-auto">
+                <Button asChild size="lg" variant="default" className="text-lg px-8 py-6 h-auto">
                   <Link href="/chat">Chatea gratis</Link>
                 </Button>
               </motion.div>
@@ -216,7 +216,7 @@ export default function PaginaInicio() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
               className="relative"
             >
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl rotate-2">
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-border/50 rotate-2">
                 <motion.div
                   initial={{ scale: 1, opacity: 0 }}
                   animate={enVistaHero ? { 
@@ -260,7 +260,7 @@ export default function PaginaInicio() {
             initial={{ opacity: 0, y: 20 }}
             animate={enVistaCaracteristicas ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12"
+            className="font-heading text-3xl md:text-4xl font-normal text-center text-foreground mb-12"
           >
             Características
           </motion.h2>
@@ -273,10 +273,10 @@ export default function PaginaInicio() {
                   animate={enVistaCaracteristicas ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
                   transition={{ duration: 0.8, delay: indice * 0.12, ease: [0.16, 1, 0.3, 1] }}
                   whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
-                  className="bg-card rounded-xl p-6 shadow-sm border border-border"
+                  className="bg-card rounded-3xl p-6 shadow-sm border border-border"
                 >
                   <motion.div 
-                    className="aspect-[4/3] bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden relative"
+                    className="aspect-[4/3] bg-muted rounded-2xl mb-4 flex items-center justify-center overflow-hidden relative"
                     whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
                   >
                     <motion.div
@@ -296,10 +296,10 @@ export default function PaginaInicio() {
                       />
                     </motion.div>
                   </motion.div>
-                  <h3 className="text-xl font-semibold mb-3 text-card-foreground">
+                  <h3 className="font-heading text-xl font-normal mb-3 text-card-foreground">
                     {caracteristica.titulo}
                   </h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {caracteristica.descripcion}
                   </p>
                 </motion.div>
@@ -309,7 +309,7 @@ export default function PaginaInicio() {
         </div>
       </section>
 
-      <section className="w-full bg-[#5C5C5C] py-16" ref={refCTA}>
+      <section className="w-full bg-secondary/50 border-y border-border py-16" ref={refCTA}>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={enVistaCTA ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
@@ -321,7 +321,7 @@ export default function PaginaInicio() {
               initial={{ opacity: 0, y: 20 }}
               animate={enVistaCTA ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-3xl md:text-4xl font-bold text-white"
+              className="font-heading text-3xl md:text-4xl font-normal text-foreground"
             >
               ¿Listo para comenzar?
             </motion.h2>
@@ -329,7 +329,7 @@ export default function PaginaInicio() {
               initial={{ opacity: 0, y: 20 }}
               animate={enVistaCTA ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="text-lg text-white/90 leading-relaxed"
+              className="text-lg text-muted-foreground leading-relaxed"
             >
               Únete a miles de dueños de perros que ya confían en ByteChat para el cuidado de sus mascotas. 
               Es completamente gratis y no requiere registro.
@@ -341,7 +341,7 @@ export default function PaginaInicio() {
               whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
               whileTap={{ scale: 0.95 }}
             >
-              <Button asChild size="lg" className="bg-[#7A4F2F] hover:bg-[#7A4F2F]/90 text-white text-lg px-8 py-6 h-auto">
+              <Button asChild size="lg" variant="default" className="text-lg px-8 py-6 h-auto">
                 <Link href="/chat">Comenzar Chat Ahora</Link>
               </Button>
             </motion.div>
@@ -357,9 +357,9 @@ export default function PaginaInicio() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={enVistaCTA ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                   transition={{ duration: 0.6, delay: 0.6 + indice * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex items-center gap-2 text-white"
+                  className="flex items-center gap-2 text-foreground font-medium"
                 >
-                  <Check className="size-5 text-green-400" />
+                  <Check className="size-5 text-primary" />
                   <span>{texto}</span>
                 </motion.div>
               ))}
@@ -368,7 +368,7 @@ export default function PaginaInicio() {
         </motion.div>
       </section>
 
-      <section className="w-full bg-[#4A3220] py-12" ref={refEstadisticas}>
+      <section className="w-full bg-[color-mix(in_oklch,var(--primary)_85%,#000)] text-primary-foreground py-12" ref={refEstadisticas}>
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto text-center">
             {estadisticas.map((estadistica, indice) => (
@@ -386,7 +386,7 @@ export default function PaginaInicio() {
                 }}
                 className="space-y-2"
               >
-                <div className="text-3xl md:text-4xl font-bold text-white">
+                <div className="font-heading text-3xl md:text-4xl text-white">
                   {enVistaEstadisticas ? (
                     <ContadorAnimado valor={estadistica.valor} />
                   ) : (
@@ -400,7 +400,7 @@ export default function PaginaInicio() {
         </div>
       </section>
 
-      <footer className="w-full bg-[#4A3220] py-12" ref={refFooter} role="contentinfo">
+      <footer className="w-full bg-[color-mix(in_oklch,var(--primary)_92%,#000)] text-white py-12" ref={refFooter} role="contentinfo">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={enVistaFooter ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -410,8 +410,8 @@ export default function PaginaInicio() {
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <ByteIcon className="size-6 text-white" />
-                <span className="text-xl font-bold text-white">Byte Chat</span>
+                <ByteIcon className="size-6 text-primary-foreground" />
+                <span className="font-heading text-xl text-white">Byte Chat</span>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">
                 Tu asistente AI especializado en perros. Obtén respuestas expertas sobre cuidado canino, 
@@ -444,46 +444,61 @@ export default function PaginaInicio() {
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-white font-semibold mb-3">Enlaces</h3>
+                <h3 className="font-heading text-white text-base mb-3">Marco Legal y Enlaces</h3>
                 <ul className="space-y-2 text-white/80 text-sm">
                   <li>
                     <motion.div whileHover={{ x: 5 }}>
-                      <Link href="#" className="hover:text-white transition-colors">Quienes somos</Link>
+                      <Link href="/privacidad" className="hover:text-white transition-colors">
+                        Política de privacidad
+                      </Link>
                     </motion.div>
                   </li>
                   <li>
                     <motion.div whileHover={{ x: 5 }}>
-                      <Link href="#" className="hover:text-white transition-colors">Política de privacidad</Link>
+                      <Link href="/terminos" className="hover:text-white transition-colors">
+                        Términos y condiciones
+                      </Link>
                     </motion.div>
                   </li>
                   <li>
                     <motion.div whileHover={{ x: 5 }}>
-                      <Link href="#" className="hover:text-white transition-colors">Contáctanos</Link>
+                      <Link href="/cookies" className="hover:text-white transition-colors">
+                        Política de cookies
+                      </Link>
                     </motion.div>
                   </li>
                 </ul>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-3">Redes sociales</h3>
+                <h3 className="font-heading text-white text-base mb-3">Redes sociales</h3>
                 <div className="flex gap-4">
                   <motion.div whileHover={{ scale: 1.2, rotate: 5 }} whileTap={{ scale: 0.9 }}>
-                    <Link href="#" className="text-white/80 hover:text-white transition-colors">
+                    <Link href="#" className="text-white/80 hover:text-white transition-colors" aria-label="Facebook">
                       <Facebook className="size-5" />
                     </Link>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.2, rotate: -5 }} whileTap={{ scale: 0.9 }}>
-                    <Link href="#" className="text-white/80 hover:text-white transition-colors">
+                    <Link href="#" className="text-white/80 hover:text-white transition-colors" aria-label="Instagram">
                       <Instagram className="size-5" />
                     </Link>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.2, rotate: 5 }} whileTap={{ scale: 0.9 }}>
-                    <Link href="#" className="text-white/80 hover:text-white transition-colors">
+                    <Link href="#" className="text-white/80 hover:text-white transition-colors" aria-label="WhatsApp o Mensajería">
                       <MessageCircle className="size-5" />
                     </Link>
                   </motion.div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-white/10 text-center text-xs text-white/60 space-y-1">
+            <p>
+              © {new Date().getFullYear()} Byte Chat. Orientación y Cuidado Canino con Inteligencia Artificial.
+            </p>
+            <p className="text-white/50">
+              Aviso veterinario: Byte Chat es un asistente de IA informativo. No prescribe medicamentos ni sustituye el diagnóstico de un médico veterinario colegiado.
+            </p>
           </div>
         </motion.div>
       </footer>

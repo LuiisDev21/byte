@@ -1,0 +1,7 @@
+allowBuilds:
+  '@tailwindcss/oxide': true
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@ai-sdk/openai@2.0.133'
+  - '@ai-sdk/provider-utils@3.0.41'

@@ -11,6 +11,7 @@ interface ByteIconProps {
 
 export function ByteIcon({ className = "", ariaHidden }: ByteIconProps) {
   return (
+    /* eslint-disable-next-line @next/next/no-img-element */
     <img
       src="/byte.svg"
       alt="Byte"

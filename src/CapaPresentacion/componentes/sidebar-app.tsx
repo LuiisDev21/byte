@@ -1,11 +1,10 @@
 /**
  * Componente de sidebar principal de la aplicación con gestión de conversaciones.
  * - Muestra lista de conversaciones con scroll, estado colapsado/expandido.
+ * - Estilizado según los tokens exactos de sidebar de DESIGN.md.
  * - Funcionalidades: crear nueva conversación, eliminar conversaciones, navegación.
  * - Integra autenticación: muestra opciones de login/logout según estado usuario.
  * - Modal de confirmación para eliminar conversaciones.
- * - Diseño responsivo: colapsado muestra solo iconos, expandido muestra títulos.
- * - Accesibilidad: aria-labels, navegación por teclado, estados visuales claros.
  */
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -96,27 +95,27 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
 
   if (isCollapsed) {
     return (
-      <nav aria-label="Menú lateral colapsado" className="flex w-full flex-col h-full items-center py-4">
+      <nav aria-label="Menú lateral colapsado" className="flex w-full flex-col h-full items-center py-4 bg-sidebar text-sidebar-foreground">
         <div
           className="group relative mb-4 cursor-pointer"
           onMouseEnter={() => establecerEstaHover(true)}
           onMouseLeave={() => establecerEstaHover(false)}
           onClick={() => onToggle?.()}
         >
-          <div className="p-2 rounded-lg hover:bg-accent transition-all duration-200">
+          <div className="p-2 rounded-2xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200">
             {estaHover ? (
-              <PanelLeft className="size-6 text-primary" />
+              <PanelLeft className="size-6 text-sidebar-primary" />
             ) : (
-              <ByteIcon className="size-6 text-primary" />
+              <ByteIcon className="size-6 text-sidebar-primary" />
             )}
           </div>
         </div>
 
-        <Separator className="w-8" />
+        <Separator className="w-8 bg-sidebar-border" />
 
         <div className="mt-4 space-y-2">
-          <Button size="icon" variant="ghost" className="size-10" title="Nuevo Chat" onClick={manejarNuevoChat}>
-            <MessageSquareText className="size-5" />
+          <Button size="icon" variant="ghost" className="size-10 rounded-2xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" title="Nuevo Chat" onClick={manejarNuevoChat}>
+            <MessageSquareText className="size-5 text-sidebar-foreground" />
           </Button>
         </div>
       </nav>
@@ -124,18 +123,18 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
   }
 
   return (
-    <nav aria-label="Menú lateral" className="flex w-full flex-col h-full">
+    <nav aria-label="Menú lateral" className="flex w-full flex-col h-full bg-sidebar text-sidebar-foreground">
       <div className="p-4">
         {!isMobile && (
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <ByteIcon className="size-5 text-primary" />
-              <span className="font-semibold">Byte Chat</span>
+              <ByteIcon className="size-5 text-sidebar-primary" />
+              <span className="font-heading text-lg font-normal text-sidebar-foreground">Byte Chat</span>
             </div>
             <Button
-              size="icon"
+              size="icon-sm"
               variant="ghost"
-              className="size-8 hover:bg-accent"
+              className="size-8 rounded-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               onClick={() => onCollapse?.()}
               title="Colapsar menú"
             >
@@ -143,21 +142,21 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
             </Button>
           </div>
         )}
-        <Button onClick={manejarNuevoChat} className="w-full justify-start gap-2">
+        <Button onClick={manejarNuevoChat} variant="default" className="w-full justify-start gap-2">
           <MessageSquareText className="size-4" />
           Nuevo Chat
         </Button>
       </div>
-      <Separator />
+      <Separator className="bg-sidebar-border" />
 
-      <div className="flex-1 min-h-0 p-4 pt-3">
+      <div className="flex-1 min-h-0 p-3 pt-2">
         <ScrollArea className="size-full pr-2">
           {!usuario ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground px-2">
+            <div className="space-y-3 p-1">
+              <p className="text-xs text-sidebar-foreground/70 px-2 leading-relaxed">
                 Inicia sesión para guardar tus conversaciones
               </p>
-              <Button asChild variant="outline" className="w-full justify-start gap-2">
+              <Button asChild variant="outline" className="w-full justify-start gap-2 border-sidebar-border bg-sidebar hover:bg-sidebar-accent text-sidebar-foreground">
                 <Link href="/login">
                   <LogIn className="size-4" />
                   Iniciar sesión
@@ -166,22 +165,25 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
             </div>
           ) : (
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground px-2">Conversaciones</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 px-2 py-1">Conversaciones</p>
               <ul className="space-y-1">
                 {conversaciones.length === 0 ? (
-                  <li className="text-sm text-muted-foreground px-2 py-2">
-                    No hay conversaciones
+                  <li className="text-xs text-sidebar-foreground/60 px-2 py-3 text-center">
+                    No hay conversaciones aún
                   </li>
                 ) : (
                   conversaciones.map((conv) => {
                     const tituloLimitado = conv.titulo.length > 18 ? conv.titulo.slice(0, 18) + "..." : conv.titulo
+                    const esActivo = conversacionActual === conv.id
                     return (
                       <li key={conv.id} className="group relative w-full" style={{ minWidth: 0 }}>
                         <div className="flex items-center gap-1 w-full min-w-0">
                           <Link
                             href={`/chat/${conv.id}`}
-                            className={`flex-1 min-w-0 truncate rounded-md px-2 py-1.5 text-sm hover:bg-accent overflow-hidden ${
-                              conversacionActual === conv.id ? "bg-accent" : ""
+                            className={`flex-1 min-w-0 truncate rounded-2xl px-3 py-2 text-sm transition-all overflow-hidden ${
+                              esActivo 
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-xs" 
+                                : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
                             }`}
                             title={conv.titulo}
                             onClick={() => establecerConversacionActual(conv.id)}
@@ -190,14 +192,15 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
                             <span className="block truncate">{tituloLimitado}</span>
                           </Link>
                           <Button
-                            size="icon"
+                            size="icon-xs"
                             variant="ghost"
-                            className={`size-7 shrink-0 flex-shrink-0 z-10 ${isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                            className={`size-7 rounded-xl shrink-0 flex-shrink-0 z-10 hover:text-destructive ${isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
                             onClick={(e) => {
                               e.preventDefault()
                               e.stopPropagation()
                               manejarEliminar(conv.id, e)
                             }}
+                            title="Eliminar conversación"
                             style={{ flexShrink: 0 }}
                           >
                             <Trash2 className="size-3.5" />
@@ -215,18 +218,32 @@ export function SidebarApp({ isCollapsed = false, onToggle, onCollapse, isMobile
 
       {usuario && (
         <>
-          <Separator />
-          <div className="p-4">
-            <div className="text-xs text-muted-foreground mb-2 px-2 truncate">
+          <Separator className="bg-sidebar-border" />
+          <div className="p-3">
+            <div className="text-xs text-sidebar-foreground/70 mb-2 px-2 truncate">
               {usuario.email}
             </div>
-            <Button onClick={manejarCerrarSesion} variant="outline" className="w-full justify-start gap-2">
+            <Button onClick={manejarCerrarSesion} variant="outline" className="w-full justify-start gap-2 border-sidebar-border bg-sidebar hover:bg-sidebar-accent text-sidebar-foreground">
               <LogOut className="size-4" />
               Cerrar sesión
             </Button>
           </div>
         </>
       )}
+
+      <div className="mt-auto px-4 py-2.5 text-[11px] text-sidebar-foreground/60 flex items-center justify-center gap-2 border-t border-sidebar-border/40">
+        <Link href="/privacidad" className="hover:text-sidebar-foreground transition-colors">
+          Privacidad
+        </Link>
+        <span>•</span>
+        <Link href="/terminos" className="hover:text-sidebar-foreground transition-colors">
+          Términos
+        </Link>
+        <span>•</span>
+        <Link href="/cookies" className="hover:text-sidebar-foreground transition-colors">
+          Cookies
+        </Link>
+      </div>
 
       <ModalEliminarConversacion
         abierto={modalEliminarAbierto}

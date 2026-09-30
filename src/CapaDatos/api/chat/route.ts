@@ -1,18 +1,21 @@
 /**
- * API Route de Next.js para chat con streaming de Google AI.
- * - Runtime: edge, dynamic; valida API_KEY y procesa mensajes del chat.
- * - POST(): recibe { messages, prompt, temperature, maxTokens, system },
- *   filtra mensajes del sistema, valida contenido no vacío y llama a streamText()
- *   con Google Gemini devolviendo respuesta en streaming (SSE/text/plain).
+ * API Route de Next.js para chat con streaming multi-proveedor (OpenAI, Google Gemini, etc.).
+ * - POST(): recibe { messages, prompt, temperature, maxTokens, system, provider, model },
+ *   valida credenciales, filtra mensajes y llama a streamText() con el modelo resuelto,
+ *   devolviendo respuesta en streaming.
  */
 
 import { NextRequest } from "next/server"
-import { google } from "@ai-sdk/google"
 import { streamText, CoreMessage } from "ai"
-import { MODELO_PREDETERMINADO, PROMPT_SISTEMA } from "@/CapaDatos/configuracion/ia"
+import { 
+  obtenerModeloIA, 
+  validarCredencialesIA, 
+  PROMPT_SISTEMA,
+  ProveedorIA 
+} from "@/CapaDatos/configuracion/ia"
 import { RolMensaje, ContenidoMensaje } from "@/CapaDatos/tipos/mensaje"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 interface MensajeEntrante {
@@ -26,6 +29,8 @@ interface CuerpoSolicitud {
   temperature?: number
   maxTokens?: number
   system?: string
+  provider?: ProveedorIA
+  model?: string
 }
 
 const ENCABEZADOS_JSON = { "content-type": "application/json" }
@@ -35,10 +40,6 @@ function crearRespuestaError(error: string, estado: number) {
     JSON.stringify({ error }),
     { status: estado, headers: ENCABEZADOS_JSON }
   )
-}
-
-function validarClaveApi(): boolean {
-  return !!process.env.GOOGLE_GENERATIVE_AI_API_KEY
 }
 
 function prepararMensajes(cuerpo: CuerpoSolicitud): MensajeEntrante[] {
@@ -51,21 +52,14 @@ function prepararMensajes(cuerpo: CuerpoSolicitud): MensajeEntrante[] {
     : [{ role: "user", content: String(cuerpo.prompt ?? "") }]
 }
 
-function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
+export function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
   return mensajes.map((m): CoreMessage => {
     const role = m.role as "user" | "assistant"
     
     if (typeof m.content === "string") {
-      if (role === "user") {
-        return {
-          role: "user",
-          content: m.content,
-        }
-      } else {
-        return {
-          role: "assistant",
-          content: m.content,
-        }
+      return {
+        role,
+        content: m.content,
       }
     }
     
@@ -98,16 +92,9 @@ function transformarMensajes(mensajes: MensajeEntrante[]): CoreMessage[] {
       }
     }
     
-    if (role === "user") {
-      return {
-        role: "user",
-        content: "",
-      }
-    } else {
-      return {
-        role: "assistant",
-        content: "",
-      }
+    return {
+      role,
+      content: "",
     }
   })
 }
@@ -138,11 +125,15 @@ function tieneEntradaUsuarioValida(mensajes: CoreMessage[]): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!validarClaveApi()) {
-      return crearRespuestaError("API KEY NO ENCONTRADA.", 500)
-    }
+    const cuerpo: CuerpoSolicitud = await req.json().catch(() => ({}))
 
-    const cuerpo: CuerpoSolicitud = await req.json()
+    const validacion = validarCredencialesIA(cuerpo.provider)
+    if (!validacion.valida) {
+      return crearRespuestaError(
+        validacion.mensajeError || "Credenciales de API de IA no configuradas.",
+        500
+      )
+    }
 
     const sistema = (cuerpo.system ?? PROMPT_SISTEMA).trim()
     const mensajes = prepararMensajes(cuerpo)
@@ -152,12 +143,17 @@ export async function POST(req: NextRequest) {
       return crearRespuestaError("Mensaje vacío", 400)
     }
 
-    const modelo = google(MODELO_PREDETERMINADO)
+    const modelo = obtenerModeloIA({
+      proveedor: cuerpo.provider,
+      modelo: cuerpo.model,
+    })
+
     const resultado = await streamText({
-      model: modelo,
+      model: modelo as unknown as Parameters<typeof streamText>[0]["model"],
       system: sistema,
       messages: mensajesPreparados,
       temperature: cuerpo.temperature ?? 0.7,
+      maxOutputTokens: cuerpo.maxTokens,
     })
 
     return resultado.toTextStreamResponse()

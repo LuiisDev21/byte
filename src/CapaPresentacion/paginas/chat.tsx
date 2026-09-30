@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { EstadoVacio } from "@/CapaPresentacion/componentes/estado-vacio"
 import { CompositorChat } from "@/CapaPresentacion/componentes/compositor-chat"
@@ -11,7 +11,7 @@ import { useUsarDesplazamientoAutomatico } from "@/CapaNegocio/hooks/usar-despla
 import { useConversaciones } from "@/CapaNegocio/contextos/contexto-conversaciones"
 import { useAutenticacion } from "@/CapaNegocio/contextos/contexto-autenticacion"
 import { useChatPersistente } from "@/CapaNegocio/hooks/usar-chat-persistente"
-import type { ContenidoMensaje } from "@/CapaDatos/tipos/mensaje"
+import type { ContenidoMensaje, Mensaje } from "@/CapaDatos/tipos/mensaje"
 
 export default function PaginaChat() {
   const params = useParams()
@@ -44,24 +44,27 @@ export default function PaginaChat() {
     }
   }, [params?.id, usuario, establecerConversacionActual])
 
+  // Detección de scroll inteligente con umbral de 150px
   useEffect(() => {
     const contenedor = refContenedorScroll.current
     if (!contenedor) return
 
     const verificarPosicionScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = contenedor
-      const estaAlFinal = scrollHeight - scrollTop - clientHeight < 100
-      establecerMostrarBotonScroll(!estaAlFinal)
-      establecerAutoScrollHabilitado(estaAlFinal)
+      const distanciaDelFondo = scrollHeight - scrollTop - clientHeight
+      const cercaDelFondo = distanciaDelFondo <= 150
+      
+      establecerMostrarBotonScroll(prev => (prev !== !cercaDelFondo ? !cercaDelFondo : prev))
+      establecerAutoScrollHabilitado(prev => (prev !== cercaDelFondo ? cercaDelFondo : prev))
     }
 
-    contenedor.addEventListener("scroll", verificarPosicionScroll)
+    contenedor.addEventListener("scroll", verificarPosicionScroll, { passive: true })
     verificarPosicionScroll()
 
     return () => {
       contenedor.removeEventListener("scroll", verificarPosicionScroll)
     }
-  }, [chat.mensajes.length, chatLocal.estaCargando])
+  }, [])
 
   useUsarDesplazamientoAutomatico(
     refContenedorScroll,
@@ -74,29 +77,12 @@ export default function PaginaChat() {
 
   const scrollAlFinal = () => {
     if (refContenedorScroll.current) {
-      const contenedor = refContenedorScroll.current
-      const destino = contenedor.scrollHeight
-      const inicio = contenedor.scrollTop
-      const distancia = destino - inicio
-      const duracion = Math.min(800, Math.max(300, distancia * 0.5))
-      const inicioTiempo = performance.now()
-
-      const animarScroll = (tiempoActual: number) => {
-        const tiempoTranscurrido = tiempoActual - inicioTiempo
-        const progreso = Math.min(tiempoTranscurrido / duracion, 1)
-
-        const facilidad = 1 - Math.pow(1 - progreso, 3)
-
-        contenedor.scrollTop = inicio + (distancia * facilidad)
-
-        if (progreso < 1) {
-          requestAnimationFrame(animarScroll)
-        } else {
-          establecerAutoScrollHabilitado(true)
-        }
-      }
-
-      requestAnimationFrame(animarScroll)
+      establecerAutoScrollHabilitado(true)
+      establecerMostrarBotonScroll(false)
+      refContenedorScroll.current.scrollTo({
+        top: refContenedorScroll.current.scrollHeight,
+        behavior: "smooth"
+      })
     }
   }
 
@@ -109,6 +95,119 @@ export default function PaginaChat() {
       }
     }, 100)
   }
+
+  // Parada inmediata de streaming según modo anónimo o autenticado
+  const manejarParada = useCallback(() => {
+    if (usuario) {
+      chatPersistente.detener()
+      chatLocal.establecerEstaCargando(false)
+    } else {
+      chatLocal.detener()
+    }
+  }, [usuario, chatPersistente, chatLocal])
+
+  // Lógica de regeneración de respuesta
+  const manejarRegeneracion = useCallback(async () => {
+    if (chatLocal.estaCargando) return
+
+    if (usuario) {
+      if (chatPersistente.mensajes.length === 0) return
+
+      const mensajesActuales = [...chatPersistente.mensajes]
+      const ultimoMsg = mensajesActuales[mensajesActuales.length - 1]
+
+      if (ultimoMsg && ultimoMsg.role === "assistant") {
+        await chatPersistente.eliminarUltimoMensajeAsistente()
+        mensajesActuales.pop()
+      }
+
+      if (mensajesActuales.length === 0) return
+
+      const ultimoUsuario = [...mensajesActuales].reverse().find(m => m.role === "user")
+      if (!ultimoUsuario) return
+
+      chatLocal.establecerEstaCargando(true)
+      const controlador = chatPersistente.crearControladorAborto()
+
+      const idMensajeAsistente = (Date.now() + 1).toString()
+      const mensajeAsistenteInicial: Mensaje = {
+        id: idMensajeAsistente,
+        role: "assistant",
+        content: "",
+        timestamp: new Date()
+      }
+
+      chatPersistente.establecerMensajes(prev => [...prev, mensajeAsistenteInicial])
+      let respuestaAcumulada = ""
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: mensajesActuales,
+          }),
+          signal: controlador.signal,
+        })
+
+        if (!response.ok) throw new Error("Error en la respuesta")
+        if (!response.body) throw new Error("La respuesta no contiene un cuerpo de streaming")
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            if (value) {
+              const chunk = decoder.decode(value, { stream: true })
+              respuestaAcumulada += chunk
+
+              chatPersistente.establecerMensajes(prev => prev.map(msg =>
+                msg.id === idMensajeAsistente
+                  ? { ...msg, content: respuestaAcumulada }
+                  : msg
+              ))
+            }
+          }
+
+          const chunkFinal = decoder.decode()
+          if (chunkFinal) {
+            respuestaAcumulada += chunkFinal
+            chatPersistente.establecerMensajes(prev => prev.map(msg =>
+              msg.id === idMensajeAsistente
+                ? { ...msg, content: respuestaAcumulada }
+                : msg
+            ))
+          }
+        } finally {
+          reader.releaseLock()
+        }
+
+        if (conversacionActual && respuestaAcumulada) {
+          const { guardarMensaje } = await import("@/CapaDatos/repositorios/mensajes")
+          const dataGuardada = await guardarMensaje(conversacionActual, "assistant", respuestaAcumulada)
+          if (dataGuardada?.id) {
+            chatPersistente.establecerMensajes(prev => prev.map(msg =>
+              msg.id === idMensajeAsistente ? { ...msg, id: dataGuardada.id } : msg
+            ))
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          console.log("Regeneración abortada por el usuario")
+        } else {
+          console.error("Error al regenerar respuesta:", error)
+        }
+      } finally {
+        chatLocal.establecerEstaCargando(false)
+      }
+    } else {
+      await chatLocal.regenerar()
+    }
+  }, [chatLocal, usuario, chatPersistente, conversacionActual])
 
   const manejarEnvio: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
@@ -146,7 +245,7 @@ export default function PaginaChat() {
           window.history.pushState({}, "", `/chat/${idConversacion}`)
         }
 
-        const mensajeUsuario: import("@/CapaDatos/tipos/mensaje").Mensaje = {
+        const mensajeUsuario: Mensaje = {
           id: Date.now().toString(),
           role: "user" as const,
           content: contenidoMensaje.length === 1 && contenidoMensaje[0].type === "text"
@@ -162,12 +261,15 @@ export default function PaginaChat() {
 
         chatPersistente.establecerMensajes(prev => [...prev, mensajeUsuario])
 
+        const controlador = chatPersistente.crearControladorAborto()
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: [...chatPersistente.mensajes, mensajeUsuario],
-          })
+          }),
+          signal: controlador.signal,
         })
 
         if (!response.ok) throw new Error("Error en la respuesta")
@@ -177,7 +279,7 @@ export default function PaginaChat() {
         }
 
         const idMensajeAsistente = (Date.now() + 1).toString()
-        const mensajeAsistenteInicial: import("@/CapaDatos/tipos/mensaje").Mensaje = {
+        const mensajeAsistenteInicial: Mensaje = {
           id: idMensajeAsistente,
           role: "assistant",
           content: "",
@@ -220,7 +322,12 @@ export default function PaginaChat() {
           reader.releaseLock()
         }
 
-        await guardarMensaje(idConversacion, "assistant", respuestaAcumulada)
+        const dataAsistente = await guardarMensaje(idConversacion, "assistant", respuestaAcumulada)
+        if (dataAsistente?.id) {
+          chatPersistente.establecerMensajes(prev => prev.map(msg =>
+            msg.id === idMensajeAsistente ? { ...msg, id: dataAsistente.id } : msg
+          ))
+        }
 
         const conversacion = conversaciones.find(c => c.id === idConversacion)
         if (conversacion && conversacion.titulo === "Nueva conversación") {
@@ -253,7 +360,11 @@ export default function PaginaChat() {
           }
         }
       } catch (error) {
-        console.error("Error:", error)
+        if (error instanceof Error && error.name === "AbortError") {
+          console.log("Generación abortada por el usuario")
+        } else {
+          console.error("Error:", error)
+        }
       } finally {
         chatLocal.establecerEstaCargando(false)
       }
@@ -270,7 +381,11 @@ export default function PaginaChat() {
           className="mx-auto w-full max-w-4xl px-3 md:px-4 py-4 md:py-6 pb-6"
         >
           {tieneMensajes ? (
-            <MensajesChat messages={chat.mensajes} isLoading={chatLocal.estaCargando} />
+            <MensajesChat
+              messages={chat.mensajes}
+              isLoading={chatLocal.estaCargando}
+              onRegenerate={manejarRegeneracion}
+            />
           ) : (
             <EstadoVacio onPreguntaClick={manejarPreguntaRapida} />
           )}
@@ -291,7 +406,9 @@ export default function PaginaChat() {
           value={chatLocal.entrada}
           onChange={chatLocal.establecerEntrada}
           onSubmit={manejarEnvio}
-          disabled={chatLocal.estaCargando}
+          disabled={false}
+          isLoading={chatLocal.estaCargando}
+          onStop={manejarParada}
           selectedImage={chatLocal.imagenSeleccionada}
           onImageSelect={chatLocal.establecerImagenSeleccionada}
           onImageRemove={() => chatLocal.establecerImagenSeleccionada(null)}

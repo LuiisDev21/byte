@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Habilitar modo standalone para Docker
-  output: 'standalone',
+  // Habilitar modo standalone si se especifica (ej. Docker / CI)
+  ...(process.env.BUILD_STANDALONE === 'true' ? { output: 'standalone' as const } : {}),
   
   // Configuración de imágenes (si usas next/image)
   images: {

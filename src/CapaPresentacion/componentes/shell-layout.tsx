@@ -22,8 +22,9 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
   const [movilAbierto, establecerMovilAbierto] = useState(false)
   const [esEscritorio, establecerEsEscritorio] = useState(false)
 
-  const rutasSinSidebar = ["/", "/login"]
-  const mostrarSidebar = !rutasSinSidebar.includes(pathname)
+  // Solo las rutas de chat utilizan sidebar y contenedor bloqueado de 100dvh
+  const mostrarSidebar = Boolean(pathname?.startsWith("/chat"))
+  const permitirScroll = !mostrarSidebar
 
   const anchoSb = abierto ? "16rem" : "4rem"
   type VarsCSS = React.CSSProperties & { [key: string]: string | number | undefined }
@@ -36,8 +37,6 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
     mq.addEventListener("change", alCambiar)
     return () => mq.removeEventListener("change", alCambiar)
   }, [])
-
-  const permitirScroll = !mostrarSidebar
 
   return (
     <ProveedorLayoutUI value={{ esEscritorio, sidebarAbierto: abierto }}>
@@ -52,7 +51,7 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
             initial={false}
             animate={{ width: abierto ? "16rem" : "4rem" }}
             transition={{ type: "spring", stiffness: 260, damping: 28 }}
-            className="fixed inset-y-0 left-0 z-20 flex flex-col border-r bg-sidebar overflow-hidden"
+            className="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-sidebar-border bg-sidebar overflow-hidden"
           >
             <SidebarApp 
               isCollapsed={!abierto} 
@@ -72,9 +71,9 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
           </header>
         )}
 
-        <div className={`${permitirScroll ? "" : "h-dvh"} ${mostrarSidebar ? "pt-14 md:pt-0" : ""} ${permitirScroll ? "" : "flex flex-col"}`}>
+        <div className={`${permitirScroll ? "min-h-screen w-full" : "h-dvh flex flex-col"} ${mostrarSidebar ? "pt-14 md:pt-0" : ""}`}>
           <motion.main
-            className={permitirScroll ? "" : "flex-1 flex flex-col overflow-hidden"}
+            className={permitirScroll ? "min-h-screen w-full" : "flex-1 flex flex-col overflow-hidden"}
             initial={false}
             animate={{
               marginLeft: mostrarSidebar && esEscritorio ? (abierto ? "16rem" : "4rem") : 0

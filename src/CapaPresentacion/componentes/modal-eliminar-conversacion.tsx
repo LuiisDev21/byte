@@ -63,7 +63,7 @@ export function ModalEliminarConversacion({
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold mb-2">Eliminar conversación</h3>
+            <h3 className="font-heading text-lg font-normal mb-2">Eliminar conversación</h3>
             <p className="text-sm text-muted-foreground mb-4">
               ¿Estás seguro de que deseas eliminar la conversación{" "}
               <span className="font-medium text-foreground">

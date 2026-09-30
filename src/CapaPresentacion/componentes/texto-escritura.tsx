@@ -1,12 +1,11 @@
 /**
- * Componente React para texto con efecto de aparición.
- * - TextoEscritura(): muestra texto con transición de opacidad suave tras delay de 100ms
- *   cuando enabled=true, sino aparece inmediatamente.
- * - MarkdownEscritura(): renderiza markdown con animación fade-in, actualiza key
- *   para forzar re-render cuando cambia el texto.
+ * Componente React para renderizar Markdown durante el streaming y en estado final.
+ * - MarkdownEscritura: renderiza markdown de forma fluida y continua sin destruir el DOM en cada chunk,
+ *   eliminando el parpadeo y mostrando un cursor pulsante suave mientras está escribiendo.
+ * - TextoEscritura: renderiza texto plano de forma fluida sin recargas destructivas de opacidad.
  */
 "use client"
-import { useEffect, useState } from "react"
+import React from "react"
 import { Markdown } from "@/CapaPresentacion/componentes/markdown"
 
 type Props = {
@@ -15,61 +14,34 @@ type Props = {
   className?: string
 }
 
-export function TextoEscritura({ text, enabled = true, className }: Props) {
-  const [esVisible, establecerEsVisible] = useState(false)
-
-  useEffect(() => {
-    if (!enabled) {
-      establecerEsVisible(true)
-      return
-    }
-
-    establecerEsVisible(false)
-    
-    const temporizador = setTimeout(() => {
-      establecerEsVisible(true)
-    }, 100)
-
-    return () => clearTimeout(temporizador)
-  }, [text, enabled])
-
+export function TextoEscritura({ text, enabled = false, className }: Props) {
   return (
-    <span 
-      className={`${className} transition-opacity duration-500 ease-in-out ${
-        esVisible ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
+    <span className={className}>
       {text}
+      {enabled && (
+        <span
+          className="inline-block w-1.5 h-3.5 ml-1 rounded-full bg-primary/70 align-middle animate-pulse"
+          aria-hidden="true"
+        />
+      )}
     </span>
   )
 }
 
 type PropsMD = Omit<Props, "text"> & { text: string }
 
-export function MarkdownEscritura({ text, enabled = true, className }: PropsMD) {
-  const [textoMostrado, establecerTextoMostrado] = useState("")
-  const [clave, establecerClave] = useState(0)
-
-  useEffect(() => {
-    if (!enabled) {
-      establecerTextoMostrado(text)
-      return
-    }
-
-    if (text !== textoMostrado) {
-      establecerTextoMostrado(text)
-      establecerClave(prev => prev + 1) 
-    }
-  }, [text, enabled, textoMostrado])
-
+export function MarkdownEscritura({ text, enabled = false, className }: PropsMD) {
   return (
-    <div 
-      key={clave}
-      className={`${className} animate-in fade-in duration-200 ease-out`}
-    >
+    <div className={className}>
       <Markdown className="prose prose-neutral max-w-none dark:prose-invert">
-        {textoMostrado}
+        {text}
       </Markdown>
+      {enabled && (
+        <span
+          className="inline-block w-2 h-4 ml-1 rounded-xs bg-primary/80 align-middle animate-pulse"
+          aria-hidden="true"
+        />
+      )}
     </div>
   )
 }

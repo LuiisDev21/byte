@@ -120,14 +120,12 @@ export default function LayoutRaiz({
 
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh`}> 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Analytics/>
-      </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh`}> 
         <ProveedorAutenticacion>
           <ProveedorConversaciones>
             <ShellLayout>{children}</ShellLayout>
