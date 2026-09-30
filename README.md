@@ -1,3 +1,7 @@
+
+
+
+
 <div align="center">
   <img height="200" src="https://kowinature.es/img/cms/perrito.jpg"  />
 </div>
@@ -10,7 +14,7 @@
 ![Stars](https://m3-markdown-badges.vercel.app/stars/3/2/Luiisdev21/byte)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LuiisDev21/byte)
 # Byte Chat - Asistente AI Experto en perros
-
+https://github.com/user-attachments/assets/1b8dff7b-9a00-47ca-8dfa-0e12e0c0430b
 
 ###
 
